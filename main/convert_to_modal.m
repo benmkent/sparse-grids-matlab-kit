@@ -1,4 +1,4 @@
-function [modal_coeffs,K] = convert_to_modal(S,Sr,nodal_values,domain,flags,~)
+function [modal_coeffs,K,U] = convert_to_modal(S,Sr,nodal_values,domain,flags,~)
 
 % CONVERT_TO_MODAL recasts a sparse grid interpolant as a sum of orthogonal polynomials
 % i.e. computes the spectral expansion of the interpolant.
