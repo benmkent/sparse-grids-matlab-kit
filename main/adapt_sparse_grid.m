@@ -403,8 +403,8 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
 
         % compute ALL profits
         % for each SG multi-index not in I
-        profit_poly_td=[]
-        Prof_temp = []
+        profit_poly_td=[];
+        Prof_temp = [];
         for ii = 1:size(map_new_mi_only,2)
             % identify the polynomial series coefficients that would be added
             idx_valid = map_new_mi_only(:,ii)==1;
@@ -589,8 +589,8 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
 
                     % compute ALL profits
                     % for each SG multi-index not in I
-                    profit_poly_td=[]
-                    Prof_temp = []
+                    profit_poly_td=[];
+                    Prof_temp = [];
                     for ii = 1:size(map_new_mi_only,2)
                         % identify the polynomial series coefficients that would be added
                         idx_valid = map_new_mi_only(:,ii)==1;
@@ -674,7 +674,7 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
         plot(sum(polyseries_I(~poly_already_exists,:),2),controls.op_vect(polyseries_coeffs(~poly_already_exists,:)',0),'ro','LineStyle','none')
 
         plot(profit_poly_td,profits,'rx','LineStyle','none')
-        [max_profit_plt, max_profit_idx_plt] = max(profits)
+        [max_profit_plt, max_profit_idx_plt] = max(profits);
         plot(profit_poly_td(max_profit_idx_plt),max_profit_plt,'ro','LineStyle','none','MarkerFaceColor', 'r')
         plot(inds,controls.prof_tol*ones(length(inds),1))
 
