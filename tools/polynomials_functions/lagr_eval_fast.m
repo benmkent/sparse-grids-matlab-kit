@@ -38,5 +38,4 @@ for k=1:ok_len
     % here it comes the computation of the lagrangian factor (x-x_k)/(current_knot-x_k)
     L=L.*(non_grid_points-knots_k)/(current_knot-knots_k);
 end
-
 end
