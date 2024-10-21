@@ -1,5 +1,4 @@
 function adapted = adapt_sparse_grid(f,N_full,knots,lev2knots,prev_adapt,controls)
-
 % ADAPT_SPARSE_GRID computes an adaptive sparse grid approximation of a function f:
 %
 % ADAPTED = ADAPT_SPARSE_GRID(F,N_FULL,KNOTS,LEV2KNOTS,PREV_ADAPT,CONTROLS)
@@ -259,7 +258,6 @@ if isempty(MATLAB_SPARSE_KIT_VERBOSE)
 end
 
 
-
 % set control fields
 controls = default_controls(controls,N_full);
 
@@ -289,6 +287,8 @@ controls = default_controls(controls,N_full);
 % --> var_with_pts: vector of variables in which we have actually put points. 
 %                   length(var_with_pts) + controls.var_buffer_size = N_curr
 % --> N_log     : for every iteration, the value of N_curr
+% --> poly_log  : log of the polynomial terms (as a vector of degrees) added to the approximation
+% --> prof_tol  : the profit tolerance that is either derivied from spectral plateaus or set by controls.
 
 % we need to distinguish the full dimension of the parameter space (N_tot) and the dimensional of the subspace
 % currently explored (N_curr = length(expl_var)). For consistency with previous code, we actually use N instead of N_curr
@@ -300,19 +300,19 @@ controls = default_controls(controls,N_full);
 N = controls.var_buffer_size;
 
 
-[N,N_log,var_with_pts,S,Sr,f_on_Sr,I,I_log,idx,maxprof,idx_bin,profits,G,G_log,coeff_G,Hr,f_on_Hr,...
-    nb_pts,nb_pts_log,num_evals,intf] = start_adapt(f,N,knots,lev2knots,prev_adapt,controls); 
+[N,N_log,var_with_pts,S,Sr,f_on_Sr,I,I_log,poly_log,idx,maxprof,idx_bin,profits,G,G_log,coeff_G,Hr,f_on_Hr,...
+    nb_pts,nb_pts_log,num_evals,intf, prof_tol] = start_adapt(f,N,knots,lev2knots,prev_adapt,controls); 
 
 % Additional structures for plateau truncation
-tol_init = controls.prof_tol;
-
+controls.tol_init = prof_tol;
 
 % here's the adapt algo
-poly_log = 0*I_log;
 
 while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
 
-    if maxprof < controls.prof_tol
+    if maxprof < prof_tol
+        disp("maxprof less than prof_tol")
+        disp(maxprof)
         break
     end
     
@@ -344,7 +344,6 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
     
     Prof_temp=zeros(1,M);
     
-    
     for m=1:M
              
         % the current idx
@@ -367,55 +366,11 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
     end
 
     %-------------------------------------------
-    % if we are interested in series representation
+    % if we are interested in series representation and corresponding spectral profits
     %-------------------------------------------
-    if controls.polyseries
-        % Compute polynomial coefficients
-        polytype = controls.polytype; % Can be cell array of different polynomial types.
-        [polyseries_coeffs,polyseries_I, U] = convert_to_modal(T,Tr,f_on_Tr,controls.domain,polytype);
-        polyseries_norms = controls.op_vect(polyseries_coeffs.',0*polyseries_coeffs.');
-
-        % Map polyomial series multi-indices to sparse grid multi-indices.
-        map=zeros(size(polyseries_I,1),length(U));
-        for ii = 1:size(polyseries_I,1)
-            poly_mi = polyseries_I(ii,:);
-            for jj=1:length(U)
-                if ismember(poly_mi, U(jj).multi_indices,'rows')
-                    map(ii,jj) = 1; % Polynomial ii is in grid jj
-                end
-            end
-        end
-
-        % Identify new multi-indices in T.idx
-        mi_set_T = reshape([T.idx].',[N_full,length(T)]).';
-        [new_mi , new_mi_idx] = setdiff(mi_set_T,I,'rows');
-        idx_mask = zeros(length(U),1);
-        idx_mask(new_mi_idx)=1;
-
-        % filter the map of the polynomial indices to only consider new multi-indices (Ng?) by deleting columns
-        map_new_mi_only = map(:,idx_mask==1);
-        U_new = U(idx_mask==1);
-
-        % zero the rows corresponding to polynomials that already exist in the approximation.
-        poly_already_exists = ismember(polyseries_I,poly_log,'rows');
-        %poly_already_exists = sum(map(:,idx_mask==0),2) > 0;
-        map_new_mi_only(poly_already_exists,:) = 0;
-
-        % compute ALL profits
-        % for each SG multi-index not in I
-        profit_poly_td=[];
-        Prof_temp = [];
-        for ii = 1:size(map_new_mi_only,2)
-            % identify the polynomial series coefficients that would be added
-            idx_valid = map_new_mi_only(:,ii)==1;
-            % add define the profit by the maximum series coefficient norm
-            [Prof_temp(ii), max_idx] = max(polyseries_norms(idx_valid));
-            polyseries_I_valid = polyseries_I(idx_valid,:);
-            profit_poly_td(ii) = sum(polyseries_I_valid(max_idx,:),2);
-        end
-        profits = []; % delete old profit
-        idx_bin = [];
-        Ng = new_mi; % all MI are considered new
+    % Require the above compute_profit_idx step to ensure f_on_Tr is computed efficiently.
+    if controls.polyseries && M > 0
+        [profits, idx_bin, Ng, Prof_temp, profit_poly_td, polyseries_I, polyseries_coeffs,U_new,poly_already_exists] = compute_polyseries_profits(T,Tr, f_on_Tr,controls, I, N_full, poly_log);
     end
     
     %-------------------------------------------
@@ -442,7 +397,11 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
             
     [maxprof,k]=max(profits);
     idx=idx_bin(k,:);
-    if controls.polyseries == true
+
+    %-------------------------------------------
+    % identify polynomial terms introduced by the new multi-index idx
+    %-------------------------------------------
+    if controls.polyseries == true && M > 0
         new_poly = U_new(k).multi_indices;
     else
         new_poly = [];
@@ -455,8 +414,9 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
     % find the list of variables in which the current choice of idx wants to add points    
     to_be_explored=find(idx>1);
     
-    new_var = setdiff(to_be_explored,var_with_pts); % i.e., the variables activated by the new profit in which 
-                                                % no points have still been placed. Note that obviously new_var <= N_full
+    new_var = setdiff(to_be_explored,var_with_pts);
+    % i.e., the variables activated by the new profit in which 
+    % no points have still been placed. Note that obviously new_var <= N_full
     
     switch length(new_var)
         case 0
@@ -551,60 +511,14 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
                 Sr = Tr;
                 f_on_Sr = f_on_Tr;
                 intf = intnew;
-
-                 %-------------------------------------------
+                
+                %-------------------------------------------
                 % if we are interested in series representation
                 %-------------------------------------------
-                if controls.polyseries
-                    % Compute polynomial coefficients
-                    polytype = controls.polytype; % Can be cell array of different polynomial types.
-                    [polyseries_coeffs,polyseries_I, U] = convert_to_modal(T,Tr,f_on_Tr,controls.domain,polytype);
-                    polyseries_norms = controls.op_vect(polyseries_coeffs.',0*polyseries_coeffs.');
-
-                    % Map polyomial series multi-indices to sparse grid multi-indices.
-                    map=zeros(size(polyseries_I,1),length(U));
-                    for ii = 1:size(polyseries_I,1)
-                        poly_mi = polyseries_I(ii,:);
-                        for jj=1:length(U)
-                            if ismember(poly_mi, U(jj).multi_indices,'rows')
-                                map(ii,jj) = 1; % Polynomial ii is in grid jj
-                            end
-                        end
-                    end
-
-                    % Identify new multi-indices in T.idx
-                    mi_set_T = reshape([T.idx].',[N_full,length(T)]).';
-                    [new_mi , new_mi_idx] = setdiff(mi_set_T,I,'rows');
-                    idx_mask = zeros(length(U),1);
-                    idx_mask(new_mi_idx)=1;
-
-                    % filter the map of the polynomial indices to only consider new multi-indices (Ng?) by deleting columns
-                    map_new_mi_only = map(:,idx_mask==1);
-                    U_new = U(idx_mask==1);
-
-                    % zero the rows corresponding to polynomials that already exist in the approximation.
-                    poly_already_exists = ismember(polyseries_I,poly_log,'rows');
-                    %poly_already_exists = sum(map(:,idx_mask==0),2) > 0;
-                    map_new_mi_only(poly_already_exists,:) = 0;
-
-                    % compute ALL profits
-                    % for each SG multi-index not in I
-                    profit_poly_td=[];
-                    Prof_temp = [];
-                    for ii = 1:size(map_new_mi_only,2)
-                        % identify the polynomial series coefficients that would be added
-                        idx_valid = map_new_mi_only(:,ii)==1;
-                        % add define the profit by the maximum series coefficient norm
-                        [Prof_temp(ii), max_idx] = max(polyseries_norms(idx_valid));
-                        polyseries_I_valid = polyseries_I(idx_valid,:);
-                        profit_poly_td(ii) = sum(polyseries_I_valid(max_idx,:),2);                    
-                    end
-                    profits = []; % delete old profits
-                    idx_bin = [];
-                    Ng = new_mi; % all MI are considered new
+                % Require the above compute_profit_idx step to ensure f_on_Tr is computed efficiently.
+                if controls.polyseries && M > 0
+                    [profits, idx_bin, Ng, Prof_temp, profit_poly_td, polyseries_I, polyseries_coeffs,U_new] = compute_polyseries_profits(T,Tr, f_on_Tr,controls, I, N_full, poly_log);      
                 end
-    
-                % end polynomial series addition.
                 
                 profits= [profits, Prof_temp]; %#ok<AGROW>                
                 
@@ -617,11 +531,16 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
                 % I recompute the best profit and now I can also remove it from idx_bin (a few lines below)
                 
                 [maxprof,k]=max(profits);
-                    
                 idx=idx_bin(k,:);
 
-                new_poly = U_new(k).multi_indices;
-                
+                %-------------------------------------------
+                % identify the polynomial terms introduced by idx
+                %-------------------------------------------
+                if controls.polyseries == true && M > 0
+                    new_poly = U_new(k).multi_indices;
+                else
+                    new_poly = [];
+                end                
             else
                 if MATLAB_SPARSE_KIT_VERBOSE
                     disp('maximum number of variables to be explored reached, continuing as is') 
@@ -639,53 +558,31 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
     %-------------------------------------------
     % we now may deterimine a plateau in the polynomial series and change the tolerance
     %-------------------------------------------
-    if controls.polyseries
+    if controls.polyseries && M > 0
         % construct a monotonically decreasing envelope above the coefficient norms
         [inds,env] = coeff_envelope(sum(polyseries_I,2),controls.op_vect(polyseries_coeffs',0));
-        % for an analytic function we expect coefficient norms to decrease at an exponential rate with respect to the total degree of the polynomials. This may not be initially so we use a control burn_in.
-        offset = controls.burn_in;
-        % change point detection is used to partition log10(envelope) into two --- hopefully initially a linear (i.e. exponential envelope) region followed by a constant plateau.
-        #ipt = findchangepts(log10(env((1+offset):end)),Statistic="linear",MaxNumChanges=1);
-        ipt = findchangeptssimple(log10(env((1+offset):end)));
-        % add the burn in offset
-        %if length(ipt) > 1;
-            ipt = ipt(end) + offset;
-        %end
-        % compute first linear function
-        beta0 = [ones(length(inds(offset+1:(ipt-1))),1), inds(offset+1:(ipt-1)).'] \ log10(env(offset+1:(ipt-1))).';
-        % compute the linear function approximating the second region
-        beta1 = [ones(length(env)-ipt+1,1), inds(ipt:end).'] \ log10(env(ipt:end)).';
+        % Identify a profit tolerance on the spectral coefficents.
+        [prof_tol, ipt, beta0,beta1] = plateaudetection(inds, env, controls);
+
+        if controls.plot == 1
+            figure(99); cla(); hold on;
+            plot(inds,env,'DisplayName','env');
+            
+            plot(sum(polyseries_I(poly_already_exists,:),2),controls.op_vect(polyseries_coeffs(poly_already_exists,:)',0),'bo','LineStyle','none','DisplayName','\Vert \hat{f} \Vert approx')
+            plot(sum(polyseries_I(~poly_already_exists,:),2),controls.op_vect(polyseries_coeffs(~poly_already_exists,:)',0),'ro','LineStyle','none','DisplayName','\Vert \hat{f} \Vert new')
     
-        % determine if the second region is a plateau
-        % here we test the gradient against a tolerance see if it is suitably flat
-        if ~all(beta1==0) && abs(beta1(2)) < controls.plateau_gradient
-            % is a plateua is detected the profit tolerance is set equanl to the start of the elbow.
-            controls.prof_tol = 10^(beta1(1) +ipt*beta1(2));
-            controls.prof_tol = controls.prof_tol * controls.safety_factor;
-        else
-            % else it is is reassigned to the initial tolerance.
-            controls.prof_tol = tol_init;
+            plot(profit_poly_td,profits,'rx','LineStyle','none', 'DisplayName', 'profits')
+            [max_profit_plt, max_profit_idx_plt] = max(profits);
+            plot(profit_poly_td(max_profit_idx_plt),max_profit_plt,'ro','LineStyle','none','MarkerFaceColor', 'r', 'DisplayName', 'max profit')
+            plot(inds,prof_tol*ones(length(inds),1), 'DisplayName', 'profit tol')
+            offset = controls.burn_in;
+            plot(offset:(ipt-1),10.^(beta0(1)+(offset:(ipt))*beta0(2)),'k--x')
+    
+            plot(ipt:max(inds),10.^(beta1(1)+(ipt:max(inds))*beta1(2)),'k--o')
+            set(gca(),'YScale','log')
+            legend('show','location','southwest')
+            drawnow()
         end
-
-        figure(99); cla(); hold on;
-        plot(inds,env);
-        
-        plot(sum(polyseries_I(poly_already_exists,:),2),controls.op_vect(polyseries_coeffs(poly_already_exists,:)',0),'bo','LineStyle','none')
-        plot(sum(polyseries_I(~poly_already_exists,:),2),controls.op_vect(polyseries_coeffs(~poly_already_exists,:)',0),'ro','LineStyle','none')
-
-        plot(profit_poly_td,profits,'rx','LineStyle','none')
-        [max_profit_plt, max_profit_idx_plt] = max(profits);
-        plot(profit_poly_td(max_profit_idx_plt),max_profit_plt,'ro','LineStyle','none','MarkerFaceColor', 'r')
-        plot(inds,controls.prof_tol*ones(length(inds),1))
-
-        plot(offset:(ipt-1),10.^(beta0(1)+(offset:(ipt-1))*beta0(2)),'k--x')
-
-        plot(ipt:max(inds),10.^(beta1(1)+(ipt:max(inds))*beta1(2)),'k--o')
-        set(gca(),'YScale','log')
-        drawnow()
-
-        %display([idx_bin, profits(:)])
-
     end
     %-------------------------------------------
     % end of plateau detection
@@ -696,15 +593,14 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
     poly_log = unique(poly_log,'rows');
     I=sortrows([I; idx]); % note that I must be lexicog sorted for check_index_admissibility(Ng(m,:),I) to work
 
-    idx_bin(k,:)=[];
-    
+    idx_bin(k,:)=[];    
     profits(k)=[];
 
     N_log(end+1)=N; %#ok<AGROW>
     
     if controls.plot
         plot_idx_status(G,I,idx_bin,idx)
-        pause
+        % pause()
     end
 end
 
@@ -743,7 +639,9 @@ private.G_log=G_log;
 private.coeff_G=coeff_G;
 private.I=I;
 private.I_log = I_log;
+private.poly_log = poly_log;
 private.maxprof=maxprof;
+private.prof_tol= prof_tol;
 private.idx=idx;
 private.profits=profits;
 private.idx_bin=idx_bin;
@@ -755,335 +653,5 @@ private.nb_pts_log=nb_pts_log;
 
 adapted.private = private;
 
-
-end
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   --------------------------  end of main function -----------------------------
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%
-%
-%
-%
-%
-%---------------------------------------------------------------------------------
-% auxiliary function, set default controls
-%---------------------------------------------------------------------------------
-
-
-function controls = default_controls(controls,N_full)
-
-
-if ~isfield(controls,'pts_tol')
-    controls.pts_tol=1e-14;
-end
-if ~isfield(controls,'max_pts')
-    controls.max_pts=1000;
-end
-if ~isfield(controls,'prof_tol')
-    controls.prof_tol=1e-14;
-end
-if ~isfield(controls,'paral')
-    controls.paral=NaN;
-end
-if ~isfield(controls,'prof')
-    controls.prof='Linf/new_points';
-end
-if ~isfield(controls,'plot')
-    controls.plot=false;
-end
-if ~isfield(controls,'nested')
-    error('controls must specify the value of ''nested'' field')
-end
-if ~isfield(controls,'op_vect')
-    controls.op_vect = @(A,B) sqrt(sum((A - B).^2,1));
-end
-if strcmp(controls.prof,'weighted Linf/new_points') || strcmp(controls.prof,'weighted Linf')
-    if ~isfield(controls,'pdf')
-        error('you need to set the field ''pdf'' to use ''weighted Linf'' and ''weighted Linf/new_points'' profits')
-    end
-end
-if ~isfield(controls,'var_buffer_size')
-    controls.var_buffer_size = N_full;
-elseif isfield(controls,'var_buffer_size') && controls.var_buffer_size > N_full
-    controls.var_buffer_size = N_full;
-    warning('SparseGKit:BuffGTNfull','controls.var_buffer_size cannot be greater than N_full. The code will proceed with controls.var_buffer_size = N_full;') 
-    pause
-end
-
-if ~isfield(controls,'recycling')
-    controls.recycling = 'priority_to_evaluation';
-end
-switch controls.recycling
-    case {'priority_to_evaluation','priority_to_recycling'}
-    otherwise
-        error('unknown value of field controls.recycling')
-end
-
-if ~isfield(controls,'polyseries')
-    controls.polyseries = false;
-end
-if ~isfield(controls,'polytype')
-   controls.polytype = 'chebyshev'; 
-end
-if ~isfield(controls,'plateau_gradient')
-    controls.plateau_gradient = 0.1;
-end
-if ~isfield(controls,'safety_factor')
-    controls.safety_factor = 2.0;
-end
-end
-
-%
-%
-%
-%
-%
-%
-%
-%---------------------------------------------------------------------------------
-% auxiliary function, init/resume algorithm
-%---------------------------------------------------------------------------------
-
-
-function [N,N_log,var_with_pts,S,Sr,f_on_Sr,I,I_log,idx,maxprof,idx_bin,profits,G,G_log,coeff_G,Hr,f_on_Hr,...
-    nb_pts,nb_pts_log,num_evals,intf] = start_adapt(f,N,knots,lev2knots,prev_adapt,controls)
-
-
-% --> I         : is the set of explored indices (the grid is actually larger, it includes as well their neighbours)   
-% --> I_log     : I must be sorted lexicographically for software reasons. I_log is the same set of indices, but
-%                   sorted in the order in which they are chosen by the algorithm
-% --> idx       : is the idx with the highest profit, whose neighbour we will next explore
-% --> maxprof   : the corresponding profit
-% --> idx_bin   : is the set of idx whose profit has been computed. They have been added to the grid but their neighbour is yet to be explored
-% --> profits   : is the corresponding set of profits
-% --> G         : is the set of the grid.
-% --> G_log     : same as I_log,  but for G
-% --> coeff_G   : coefficients of the combination technique applied to G
-% --> nb_pts    : the number of points in the grid
-% --> num_evals : the number of function evaluations
-% --> nb_pts_log: for each iteration, the current nb_pts
-% --> S         : create_sparse_grid_multiidx_set(G,knots,lev2knots);
-% --> Sr        : reduce_sparse_grid(S);
-% --> f_on_Sr   : evaluate_on_sparse_grid(f,Sr);
-% --> intf      : approx of integral of f using Sr
-% --> Hr        : all the points visited by the algo, stored as a reduced grid to be able to use ; only useful for non-nested grids, where it differs from Sr.
-% --> var_with_pts: vector of variables in which we have actually put points. 
-%                   length(var_with_pts) + controls.var_buffer_size = N_curr
-% --> N_log     : for every iteration, the value of N_curr
-
-% declare a global variable controlling verbosity
-global MATLAB_SPARSE_KIT_VERBOSE
-
-if isempty(MATLAB_SPARSE_KIT_VERBOSE)
-    MATLAB_SPARSE_KIT_VERBOSE=1;
-end
-
-
-if isempty(prev_adapt)
-
-    % it's a fresh start
-    %--------------------------------------------
-
-    var_with_pts = []; % we have put no points in no variables for now
-    N_log = N;
-    I=ones(1,N);
-    I_log = ones(1,N);
-    idx = ones(1,N);
-    maxprof = Inf;
-
-    idx_bin=[];
-    profits=[];
-    
-    G = I;    
-    G_log = G;
-    coeff_G = 1;
-    S  = create_sparse_grid_multiidx_set(G,knots,lev2knots);
-    Sr = reduce_sparse_grid(S,controls.pts_tol);
-    f_on_Sr = evaluate_on_sparse_grid(f,Sr); % here we don't need controls.pts_tol, there is no check on new/old points
-
-    Hr = Sr;
-    f_on_Hr = f_on_Sr; % it is a matrix of size VxM where M is the number of points and f:R^N->R^V
-
-    intf=f_on_Sr*Sr.weights';
-    nb_pts=size(f_on_Sr,2); 
-    nb_pts_log = nb_pts;
-    num_evals = nb_pts;
-else
-
-    % we are resuming from a previous run
-    %--------------------------------------------
-
-    if MATLAB_SPARSE_KIT_VERBOSE
-        disp('adapt--recycling')
-    end
-
-    N = prev_adapt.N;
-    N_log = prev_adapt.private.N_log;
-    var_with_pts = prev_adapt.private.var_with_pts;
-    I=prev_adapt.private.I;
-    I_log = prev_adapt.private.I_log;
-    idx = prev_adapt.private.idx;
-    maxprof = prev_adapt.private.maxprof;
-
-    idx_bin=prev_adapt.private.idx_bin;
-    profits=prev_adapt.private.profits;
-    
-    G = prev_adapt.private.G;    
-    G_log = prev_adapt.private.G_log;    
-    coeff_G = prev_adapt.private.coeff_G;    
-    S = prev_adapt.S;
-    Sr= prev_adapt.Sr;
-    f_on_Sr = prev_adapt.f_on_Sr;
-    
-    Hr=prev_adapt.private.Hr;
-    f_on_Hr = prev_adapt.private.f_on_Hr;
-    
-    intf = prev_adapt.intf;
-    nb_pts=prev_adapt.nb_pts;  
-    nb_pts_log=prev_adapt.private.nb_pts_log;
-    num_evals = prev_adapt.num_evals;
-    
-end
-
-end
-
-
-%
-%
-%
-%
-%
-%
-%
-%---------------------------------------------------------------------------------
-% auxiliary function, compute profits
-%---------------------------------------------------------------------------------
-
-function [nb_pts,num_evals,nb_pts_log,Prof_temp,f_on_Tr,Hr,f_on_Hr,intnew] = ...
-      compute_profit_idx(ng_idx,f,S,T,Tr,Sr,Hr,f_on_Sr,f_on_Hr,intf,nb_pts,num_evals,nb_pts_log,knots,lev2knots,controls)
-
-
-N = size(ng_idx,2);
-
-if controls.nested
-
-    % here we we evaluate on new points only. Note that finding which points have been evaluated already
-    % relies on multiindex info almost exclusively (because the points are nested) so this is quite efficient
-    
-    [f_on_Tr,new_points,idx_newp] = evaluate_on_sparse_grid(f,T,Tr,f_on_Sr,S,Sr,controls.paral,controls.pts_tol);
-    intnew = f_on_Tr*Tr.weights';
-    
-    newp = length(idx_newp);
-    nb_pts=nb_pts + newp;
-    nb_pts_log(end+1)=nb_pts; 
-    num_evals = nb_pts;
-    Hr=[];
-    f_on_Hr=[];
-    
-else
-    
-    % in this case, we need to keep track of all the points explored, even those that have been discarded in
-    % previous iterations
-    
-    if strcmp(controls.recycling,'priority_to_evaluation') 
-        %here we allow for multiple evaluations of the same point because we recycle from the previous grid only.
-        % if the function evaluation is "cheap" this is much faster, because the search for common points relies
-        % on multiindices and not on comparison of coordinates
-        [f_on_Tr,~,idx_newp] = evaluate_on_sparse_grid(f,T,Tr,f_on_Sr,S,Sr,controls.paral,controls.pts_tol);
-        intnew = f_on_Tr*Tr.weights';
-        
-        Hr.knots = [Hr.knots, Tr.knots(:,idx_newp)];
-        f_on_Hr = [f_on_Hr, f_on_Tr(:,idx_newp)];
-
-        newp = prod(lev2knots(ng_idx));
-        nb_pts = size(Tr.knots,2); 
-        num_evals = num_evals + length(idx_newp);
-        nb_pts_log(end+1)=nb_pts;
-        
-    else
-        % here we want to make sure no multiple evaluations of the same point occur. Thus we look in 
-        % all points ever visited, but this is expensive because we rely on point coordinates only!
-
-        [f_on_Tr,~,idx_newp] = evaluate_on_sparse_grid(f,T,Tr,f_on_Hr,[],Hr.knots,controls.paral,controls.pts_tol); 
-        intnew = f_on_Tr*Tr.weights';
-        
-        Hr.knots = [Hr.knots, Tr.knots(:,idx_newp)];
-        f_on_Hr = [f_on_Hr, f_on_Tr(:,idx_newp)];
-        
-        newp = prod(lev2knots(ng_idx));
-        nb_pts = size(f_on_Tr,2); 
-        num_evals = size(Hr.knots,2);
-        nb_pts_log(end+1)=nb_pts;
-    end
-    % moreover, if profit is of type Linf, we need to evaluate the new grid on the ``nominally new points'',
-    
-    switch controls.prof
-        
-        case {'Linf/new_points','Linf','weighted Linf/new_points','weighted Linf'}
-            
-            Tx = tensor_grid(N,lev2knots(ng_idx),knots);
-            new_points= Tx.knots;
-            Tr_on_new_pts = interpolate_on_sparse_grid(T,Tr,f_on_Tr,new_points);
-            
-            
-        case {'deltaint/new_points','deltaint'}
-            
-            % no need of new points
-            
-        otherwise
-            
-            error('do we need new points in this case? fix code here')
-    end
-    
-end % closes if controls.nested
-
-
-switch controls.prof
-    
-    case 'Linf/new_points'
-        Sr_on_new_pts = interpolate_on_sparse_grid(S,Sr,f_on_Sr,new_points);
-        if controls.nested
-            Prof_temp = max(controls.op_vect(f_on_Tr(:,idx_newp),Sr_on_new_pts))/newp;
-        else
-            Prof_temp = max(controls.op_vect(Tr_on_new_pts,Sr_on_new_pts))/newp;
-        end
-        
-    case 'Linf'
-        Sr_on_new_pts = interpolate_on_sparse_grid(S,Sr,f_on_Sr,new_points);
-        if controls.nested
-            Prof_temp = max(controls.op_vect(f_on_Tr(:,idx_newp),Sr_on_new_pts));
-        else
-            Prof_temp = max(controls.op_vect(Tr_on_new_pts,Sr_on_new_pts));
-        end
-        
-    case 'deltaint/new_points'
-        delta_int  = controls.op_vect(intnew,intf);
-        Prof_temp = delta_int / newp;
-        
-    case 'deltaint'
-        delta_int  = controls.op_vect(intnew,intf);
-        Prof_temp = delta_int;
-        
-    case 'weighted Linf/new_points'
-        Sr_on_new_pts = interpolate_on_sparse_grid(S,Sr,f_on_Sr,new_points);
-        if controls.nested
-            Prof_temp = max( controls.op_vect(f_on_Tr(:,idx_newp),Sr_on_new_pts).*controls.pdf(new_points) )/newp;
-        else
-            Prof_temp = max( controls.op_vect(Tr_on_new_pts,Sr_on_new_pts).*controls.pdf(new_points) )/newp;
-        end
-        
-    case 'weighted Linf'
-        Sr_on_new_pts = interpolate_on_sparse_grid(S,Sr,f_on_Sr,new_points);
-        if controls.nested
-            Prof_temp = max( controls.op_vect(f_on_Tr(:,idx_newp),Sr_on_new_pts).*controls.pdf(new_points) );
-        else
-            Prof_temp = max( controls.op_vect(Tr_on_new_pts,Sr_on_new_pts).*controls.pdf(new_points) );
-        end
-    otherwise
-        error('unknown profit indicator. Check spelling')
-end
 
 end
