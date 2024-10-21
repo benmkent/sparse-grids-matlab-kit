@@ -149,8 +149,9 @@ for i=1:nb_grids
             % one column at a time
             aux=1:K;
             for k=aux
-                %mono_lagr_eval{dim}(:,k) = lagr_eval(knots_per_dim{dim}(k),knots_per_dim{dim}(aux~=k),non_grid_points(:,dim));
-                mono_lagr_eval{dim}(:,k) = lagr_eval_fast(knots_per_dim{dim}(k),knots_per_dim{dim}(aux~=k),K-1,non_grid_points(:,dim),[nb_pts 1]);
+                % mono_lagr_eval{dim}(:,k) = lagr_eval(knots_per_dim{dim}(k),knots_per_dim{dim}(aux~=k),non_grid_points(:,dim));
+                % mono_lagr_eval{dim}(:,k) = lagr_eval_fast(knots_per_dim{dim}(k),knots_per_dim{dim}(aux~=k),K-1,non_grid_points(:,dim),[nb_pts 1]);
+                mono_lagr_eval{dim}(:,k) = lagr_eval_fast_stable(knots_per_dim{dim}(k),knots_per_dim{dim}(aux~=k),K-1,non_grid_points(:,dim),[nb_pts 1]);
             end
         end
 
