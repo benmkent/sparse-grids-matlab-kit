@@ -104,7 +104,18 @@ f_interp = @(x) interpolate_on_sparse_grid(S,Sr,f_values,x);
 
 
 switch N
-   
+    case 1
+        % generate a mesh grid over the cut
+        xp = linspace(aa_vec(1),bb_vec(1),NP);
+        PTS = xp(:);
+        f_interp_eval = f_interp(PTS.');
+        plot(PTS,f_interp_eval);
+        xlabel('y_1')
+        if with_f_values
+            hold on
+            plot(Sr.knots(1,:),f_values,'ok','MarkerSize',12,'MarkerFaceColor','r')
+        end
+
     case 2
     
         
