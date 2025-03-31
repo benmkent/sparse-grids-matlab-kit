@@ -1,3 +1,4 @@
+%% Sparse Grids Tutorial
 % This tutorial is a "hands-on" manual of the Sparse Grid Matlab Kit a contains examples of use of the main functions.
 % More examples can be found in the files TEST_*.m in this folder. A dedicated tutorial for the function 
 % ADAPT_SPARSE_GRID can be found in TUTORIAL_ADAPTIVE.m
@@ -71,11 +72,11 @@
 %% PART 0: INSTALL / ADD TO PATH / VERBOSITY
 
 clc
-clear
+clearvars
 addpath(genpath(pwd)) % do not use addpath(genpath(./)), it won't work properly
 disp('path set')
 
-
+%%
 % to suppress most of text output on screen use
 %
 % global MATLAB_SPARSE_KIT_VERBOSE;
@@ -87,7 +88,6 @@ disp('path set')
 
 
 %% PART 1: INTRODUCTION - WHAT IS A SPARSE GRID
-
 % A sparse grid is a linear combination of many tensor grids on R^N (parameter space). 
 % Each of the tensor grids included has ``few points''. With suitable linear combinations
 % of such grids, it is possible to achieve good accuracy in quadrature and interpolation, 
@@ -123,12 +123,12 @@ end
 
 
 %% PART 1: INTRODUCTION - INGREDIENTS OF A SPARSE GRID. 1D KNOTS 
-
 % each of the tensor grids in the sparse grid is built by taking cartesian products of 1D distribution of
 % points (in general a different number of points in each direction). The Sparse Grid Matlab Kit provides
 % several knots families. These functions also return the quadrature weights associated to the knots
 % (more on this later)
 
+%%
 % Gauss-Legendre points: quadrature points to approximate integrals like \int_a^b f(x) 1/(b-a) dx with n points
 n=5; a=1; b=4;
 x=knots_uniform(n,a,b);
@@ -137,6 +137,7 @@ figure
 plot(x,0*x,'ok','MarkerFaceColor','k','DisplayName','5 GL points')
 grid on
 
+%%
 % Clenshaw-Curtis points: nested quadrature points to approximate integrals like \int_a^b f(x) 1/(b-a) dx with n
 % points. If one "doubles" the number of points, the new points will include the old ones
 
@@ -159,8 +160,7 @@ plot(x,2 + 0*x,'og','MarkerFaceColor','g','DisplayName','9 CC points (includes t
 ylim([-1.5 4])
 legend show
 
-
-
+%%
 % Leja points: nested quadrature points to approximate integrals like \int_a^b f(x) 1/(b-a) dx with n
 % points. Three different kind of Leja points are available: Line Leja, sym-Line Leja, p-disk Leja (see
 % leja_points.m for more details). All Leja points are nested by construction
@@ -208,7 +208,8 @@ ylim([-1.5 12])
 legend show
 
 
-%% we also provide equispaced (trapezoidal quadrature rule) and midpoint, 
+%%
+% we also provide equispaced (trapezoidal quadrature rule) and midpoint, 
 % which should of course be used sparingly as they are not suitable for high-order 
 % interpolation (runge phenomenon)
 
@@ -242,7 +243,8 @@ ylim([-0.5 4.5])
 legend show
 
 
-%% quadrature points to approximate integrals with normal pdf, like 
+%%
+% quadrature points to approximate integrals with normal pdf, like 
 %
 % 1/sqrt(2 sig^2 pi) \int_R f(x) e^{ -(x-mi)^2 / (2 sig^2) } dx 
 
@@ -281,7 +283,8 @@ ylim([-1.5 7])
 legend show
 
 
-%% quadrature points to approximate integrals with exponential pdf, like 
+%%
+% quadrature points to approximate integrals with exponential pdf, like 
 %
 %  \int_[0,+inf] f(x) lambda e^{ -lambda*x } dx 
 
@@ -305,7 +308,8 @@ grid on
 ylim([-0.5 1.5])
 legend show
 
-%% quadrature points to approximate integrals with gamma pdf, like 
+%%
+% quadrature points to approximate integrals with gamma pdf, like 
 %
 %  \int_[0,+inf] f(x) beta^(alpha+1)/Gamma(alpha+1)*x^alpha*exp(-beta*x) dx 
 
@@ -330,7 +334,8 @@ ylim([-0.5 1.5])
 legend show
 
 
-%% quadrature points to approximate integrals with beta pdf, like 
+%%
+% quadrature points to approximate integrals with beta pdf, like 
 %
 %  \int_[x_a, x_b] f(x) Gamma(alpha+beta+2)/(Gamma(alpha+1)*Gamma(beta+1)*(x_b-x_a)^(alpha+beta+1))*(x-x_a)^alpha*(x_b-x)^beta dx 
 
@@ -360,7 +365,8 @@ grid on
 ylim([-0.5 3])
 legend show
 
-%% quadrature points to approximate integrals with triangular pdf
+%%
+% quadrature points to approximate integrals with triangular pdf
 % (i.e. a linear decreasing pdf over the interval [a,b]), like 
 %
 %  \int_[a,b] f(x) * 2/(b-a)^2 * (b-x) dx
@@ -376,10 +382,8 @@ legend show
 
 
 %% PART 1: INTRODUCTION - INGREDIENTS OF A SPARSE GRID. LEV2KNOTS FUNCTION.
-
 % in view of building sparse grids, it is useful to order quadrature/interpolation rules in sequences, i.e. to
 % introduce levels for the rules. The Sparse Grid Matlab Kit provides 5 functions to this end:
-
 % -> lev2knots_lin     
 %
 % adds 1 point from one level to the next: consecutive quadrature/interpolation rules have
@@ -388,7 +392,7 @@ legend show
 clc
 lev2knots_lin([1 2 3 4 5])
 
-
+%%
 % -> lev2knots_2step     
 %
 % adds 2 points from one level to the next: consecutive quadrature/interpolation rules have
@@ -396,23 +400,21 @@ lev2knots_lin([1 2 3 4 5])
 
 lev2knots_2step([1 2 3 4 5])
 
-
+%%
 % -> lev2knots_doubling 
 %
 % "doubles" the number of points from one level to the next: consecutive rules have 1,3,5,9,17... points
 
 lev2knots_doubling([1 2 3 4 5])
 
-
+%%
 % -> lev2knots_tripling 
 %
 % triples the number of points from one level to the next: consecutive rules have 1,3,9,27... points.
 
-
 lev2knots_tripling([1 2 3 4 5])
 
-
-
+%%
 % -> lev2knots_GK
 %
 % needed when using GK knots which are tabulated. consecutive rules have 1,3,9,19,35 points. The latter
@@ -423,12 +425,10 @@ lev2knots_GK([1 2 3 4 5])
 
 
 %% PART 1: INTRODUCTION - INGREDIENTS OF A SPARSE GRID. MULTI-INDEX SET
-
 % the last ingredient to specify when building a sparse grid is the set of tensor grids to be used. The
 % algorithm will then take care of computing the coefficients of the linear combination of these grids
 % (note that such coefficients may be 0 as well). 
-
-
+%
 % The most convenient way to specify tensor grids is to use multi-index notation: every grid is
 % associated to a multiindex, that is a vector of integer numbers. 
 % Each number in the vector tells the level of the quadrature rule used in each direction
@@ -453,7 +453,7 @@ plot_sparse_grid(S_lin,[],'color','k','marker','o','MarkerFaceColor','k','Displa
 legend show
 set(legend,'Location','SouthOutside')
 
-
+%%
 % there are two ways of specifying the set of multindices to be used. 
 %
 % 1) The first one is to use the parameters "level" and "idxset" of the function CREATE_sPARSE_GRID. 
@@ -491,7 +491,7 @@ legend('TD-grid')
 figure
 plot_sparse_grid(S_HC,[],'color','k','marker','o','MarkerFaceColor','k');
 legend('HC-grid')
-
+%%
 % 2) The second one is to use the function CREATE_SPARSE_GRID_MULTIIDX_SET, where one specifies exactly
 % the set of multiindex that one wishes to use. Again, the set has to satisfy
 % the ``admissibility condition'', and the rows have to be in lexicographic order. 
@@ -514,8 +514,8 @@ plot_sparse_grid(S_M,[],'color','b','marker','d','MarkerFaceColor','b');
 axis([-1 1 -1 1])
 
 
-%% the package provides two functions to generate multi-index sets. 
-
+%%
+% the package provides two functions to generate multi-index sets. 
 % a) MULTIIDX_BOX_SET generates all multiindices jj that are component-wise less than or
 % equal to some other index ii. The minimal value of the components of the indices to be generated can be either 0 or 1. For instance
 
@@ -523,6 +523,7 @@ jj=[2 3];
 C=multiidx_box_set(jj,0);
 D=multiidx_box_set(jj,1);
 
+%%
 % the package comes with a convenience function to plot a multiidx set
 
 figure
@@ -532,7 +533,7 @@ plot_multiidx_set(D,'ok','MarkerFaceColor','k','DisplayName','Multiidx box set, 
 axis([-0.5 4 -0.5 4])
 legend show
 
-
+%%
 % b) MULTIIDX_GEN generates the set of all indices ii such that rule(ii)<=w, where rule is a function that takes as input a row vector
 % (or a matrix where each multiidx is stored as a row) and returns a scalar value (or a column vector with the result of the operation applied
 % to each row of the input index vector). Again, the minimum index can be 0 or 1:
@@ -551,6 +552,7 @@ plot_multiidx_set(F,'ok','MarkerFaceColor','k','DisplayName','Multiidx gen, min=
 legend show
 axis([-0.5 8 -0.5 8])
 
+%%
 % incidentally, PLOT_MULTIIDX_SET works also for N=3. For larger dimensions, one needs to input the subset of dimensions that are to be plotted
 G=multiidx_box_set([2 3 5],1);
 figure
@@ -562,10 +564,11 @@ figure
 plot_multiidx_set(G(:,[1 3]))
 
 
-%% when building a large sparse grid, it might be useful to recycle from previous grids to speed-up the computation
+%%
+% when building a large sparse grid, it might be useful to recycle from previous grids to speed-up the computation
 
 clc
-clear
+clearvars
 
 knots=@(n) knots_normal(n,0,1);
 lev2knots=@lev2knots_lin;
@@ -584,7 +587,8 @@ toc
 
 isequal(T,T_rec) % sometimes fields like knots or weights might differ at machine precision
 
-%% note that the following call is also valid: 
+%%
+% note that the following call is also valid: 
 % T_rec=create_sparse_grid(N,w,knots,lev2knots,@(i) prod(i),[]);
 % this is useful in iterative loops like:
 clc
@@ -607,9 +611,10 @@ for w=1:7
 end
 toc
 
-%% the same functionality is also available for create_sparse_grid_multiidx_set
+%%
+% the same functionality is also available for create_sparse_grid_multiidx_set
 
-clear
+clearvars
 clc
 
 knots=@(n) knots_normal(n,0,1);
@@ -631,22 +636,21 @@ isequal(T,T_rec)
 
 
 %% PART 1: INTRODUCTION - DATA-STRUCURE
-
 % A sparse grid is represented as a vector of structures. Each element is a tensor grid, with fields
 % containing the knots, the corresponding integration weights, its coefficient in the linear combination,
 % and the number of points.
-
+%
 % In general, the following conventions hold:
 % -> points in the space of parameters are columns-vector
 % -> multiindices are row-vector
 
 
 %% PART 1: INTRODUCTION - MODIFY THE DOMAIN OF A SPARSE GRID
-
+%
 % it is easy to modify the domain of a sparse grid from (-1,1)^N to other hyper-rectangles.
 
 clc
-clear
+clearvars
 N=2;
 
 % generate knots on the desired hyper-rectangle (here (0,2)^2 )
@@ -664,7 +668,7 @@ set(legend,'Location','NorthEastOutside')
 % one can mix different intervals / different knots families on different directions. 
 
 clc
-clear
+clearvars
 N=2;
 
 knots1=@(n) knots_CC(n,0,2,'nonprob');
@@ -678,14 +682,13 @@ plot_sparse_grid(S);
 
 
 %% PART 1: INTRODUCTION - REDUCE A SPARSE GRID
-
 % The tensor grids forming the sparse grid may have points in common (even when using non-nested points).
 % To save computational time during e.g. evaluation of a function on a sparse grid, it is then important
 % to get rid of these repetions. To this end, use the function reduce_sparse_grid. The quadrature weights
 % are of course consistently modified. The field "size" tells the number in the reduced grid
 
 clc
-clear 
+clearvars 
 N=2;
 w=5;
 knots=@(n) knots_CC(n,-1,1,'nonprob'); 
@@ -714,7 +717,8 @@ axis square
 legend('reduced grid')
 set(legend,'Location','SouthOutside')
 
-%% The Kit provides a short-hand to create and reduce a "vanilla sparse grid", i.e. 
+%%
+% The Kit provides a short-hand to create and reduce a "vanilla sparse grid", i.e. 
 %  - Clenshaw--Curtis points in [-1,1] 
 %  - lev2knots_doubling 
 %  - multi-index set: sum(ii-1) \leq w 
@@ -722,7 +726,7 @@ set(legend,'Location','SouthOutside')
 %  (cf define_functions_for_rule('SM') )
 
 
-clear 
+clearvars 
 clc
 N = 2;
 w = 3;
@@ -730,7 +734,7 @@ w = 3;
 
 
 %% PART 2: EVALUATE A FUNCTION ON A SPARSE GRID - BASICS
-
+%
 % the kit comes with the function evaluate_on_sparse_grid, that allows to  evaluate a function on the points of a sparse grid, and provides
 % -> recycling of previous evaluations 
 % -> support for parallel evaluations. 
@@ -738,7 +742,7 @@ w = 3;
 
 
 clc
-clear
+clearvars
 
 fs=@(x) sum(x);
 fv=@(x) 2*x;
@@ -748,6 +752,7 @@ S=create_sparse_grid(N,w,@(n) knots_uniform(n,-1,1),@lev2knots_lin);
 Sr= reduce_sparse_grid(S);
 
 
+%%
 % plain use of evaluate_on_sparse_grid: no recycling, no parallel
 evals_plain_fs=evaluate_on_sparse_grid(fs,Sr);
 evals_plain_fv=evaluate_on_sparse_grid(fv,Sr);
@@ -773,9 +778,9 @@ find(evals_plain_fs~=evals_direct_fs)
 find(evals_plain_fv~=evals_direct_fv)
 
 %% PART 2: EVALUATE A FUNCTION ON A SPARSE GRID - USE RECYCLING FEATURE
-
+%
 clc
-clear
+clearvars
 
 f=@(x) sum(x);
 
@@ -793,12 +798,11 @@ evals_rec=evaluate_on_sparse_grid(f,T,Tr,evaluate_on_sparse_grid(f,Sr),S,Sr);
 max(abs(evals_non_rec(:)-evals_rec(:))) 
 
 %% PART 2: EVALUATE A FUNCTION ON A SPARSE GRID - RECYCLE FROM A "LIST OF POINTS"
-
 % it is also possible to recycle from a list of points. However, the algorithm used to detect
 % which points are to be evaluated is much slower than the previous case for N large
 
 clc
-clear
+clearvars
 
 f=@(x) sum(x);
 
@@ -827,7 +831,7 @@ isequal(evals_rec,evals_rec_slow)
 %% PART 2: EVALUATE A FUNCTION ON A SPARSE GRID - USE RECYCLING FEATURE FOR VECTOR OUTPUT
 
 clc
-clear
+clearvars
 
 f=@(x) 2*x;
 
@@ -845,7 +849,7 @@ evals_rec=evaluate_on_sparse_grid(f,T,Tr,evaluate_on_sparse_grid(f,Sr),S,Sr);
 max(abs(evals_non_rec(:)-evals_rec(:))) 
 
 %% PART 2: EVALUATE A FUNCTION ON A SPARSE GRID - USE PARALLEL FEATURE
-
+%
 % parallel computation can be used both with and without recycling. The parallel procedure gets activated only
 % if at least X evaluations are queried,  with X specified by the user. This is because parallel computations have some
 % communication overhead, therefore if function evaluations are fast the parallel evaluation may actually result slower
@@ -853,7 +857,7 @@ max(abs(evals_non_rec(:)-evals_rec(:)))
 
 
 clc
-clear
+clearvars
 
 f=@(x) sum(x);
 
@@ -901,29 +905,32 @@ end
 
 
 %% PART 3: INTEGRATION ON SPARSE GRIDS - BASICS
-
+%
 % In this part we show how to use the Kit to perform high-dimensional quadrature. We consider the
 % following function, for which we know the analytic expression of the integral
 %
 %   f(x) = prod(1/sqrt(x_i + b))  in [-1,1]^N
 
 clc
-clear
+clearvars
 f = @(x,b) prod(1./sqrt(x+b));
 b=3;
 N = 4;
 I_1d=(2*sqrt(1+b)-2*sqrt(-1+b));
 I_ex = I_1d^N;
 
+%%
 % generate the knots and the SM grid. 'nonprob' means we are integrating w.r.t. the pdf rho(x)=1 and not rho(x)=1/prod(b_i - a_i)
 knots=@(n) knots_CC(n,-1,1,'nonprob');
 w = 4;
 S = create_sparse_grid(N,w,knots,@lev2knots_doubling);
 Sr = reduce_sparse_grid(S);
 
+%%
 % compute integral
 I=f([Sr.knots],b)*[Sr.weights]'  %#ok<NOPTS>
 
+%%
 % alternatively use
 I2=quadrature_on_sparse_grid(@(x)f(x,b) , Sr); % Sr must be reduced here
 
@@ -937,6 +944,7 @@ disp('----------')
 disp('quad error')
 abs(I-I_ex)
 
+%%
 % sometimes, we have access to the evaluations of f from earlier code, then we just need to do the linear combination. The package provides
 % a convenience wrapper to this end,  instead of typing f_vals*Sr.weights'  
 
@@ -948,6 +956,7 @@ I3 = quadrature_on_sparse_grid(f_vals,Sr);
 
 I2-I3
 
+%% 
 % the convenience wrapper can also handle the case of computing quadrature for multiple functions at the same time. The values of each function
 % must be stored as rows of a matrix
 many_f = [f_vals; f_vals; f_vals; f_vals; f_vals];
@@ -955,22 +964,23 @@ quadrature_on_sparse_grid(many_f,Sr)
 
 
 %% PART 3: INTEGRATION ON TENSOR GRIDS 
-
 % integration on tensor grids 
 
 clc
-clear
+clearvars
 f = @(x,b) prod(1./sqrt(x+b));
 b = 3;
 N = 2;
 I_1d = (2*sqrt(1+b)-2*sqrt(-1+b));
 I_ex = I_1d^N;
 
+%%
 % let's build a tensor grid with the following choices
 knots=@(n) knots_CC(n,-1,1,'nonprob');
 ii = [6,5]; 
 lev2knots = @lev2knots_doubling;
 
+%%
 % create the tensor grid, convert it to sparse
 T = tensor_grid(N,lev2knots(ii),knots);  
 S = tensor_to_sparse(T);
@@ -982,17 +992,17 @@ is_sparse_grid(S)
 
 I=quadrature_on_sparse_grid(@(x)f(x,b) , Sr); % Sr must be reduced here
 
+%%
 % compare with exact value
 disp('----------')
 disp('quad error')
 abs(I-I_ex)
 
 %% PART 3: INTEGRATION - USE OTHER QUADRATURE KNOTS
-
 % as already seen in the introduction, other quadrature knots are available
 
 clc
-clear
+clearvars
 
 f = @(x,b) prod(1./sqrt(x+b));
 b=3;
@@ -1017,7 +1027,7 @@ abs(I-I_ex)
 
 
 %% PART 3: INTEGRATION - MODIFY QUADRATURE DOMAIN
-clear
+clearvars
 clc
 
 % suppose integrating over (-1,3)^N
@@ -1044,10 +1054,10 @@ abs(I-I_ex)
 
 
 %% PART 3: INTEGRATION - COMPUTE MOMENTS OF RANDOM VARIABLES
-
+%
 % here we compute E[f(x)] = \int_{[-2 1]x[0.5 6]} f(x) 1/(3*5.5) dx, (3*5.5 is the size of the domain)
 clc
-clear
+clearvars
 
 f = @(x,b) prod(1./sqrt(x+b));
 b=3;
@@ -1055,6 +1065,7 @@ N = 2;
 
 I_ex = 1/3/5.5*(2*sqrt(1+b)-2*sqrt(-2+b))*(2*sqrt(6+b)-2*sqrt(0.5+b))  %#ok<NOPTS>
 
+%%
 % the best-practice is to generate knots on (-2,1) and (0.5,6), specifying 'prob' as input to the
 % knots-generatic function
 knots1=@(n) knots_CC(n,-2,1,'prob'); % knots1=@(n) knots_CC(n,-2,1); would work as well as 'prob' is the default value
@@ -1064,7 +1075,7 @@ S = create_sparse_grid(N,w,{knots1,knots2},@lev2knots_doubling);
 Sr = reduce_sparse_grid(S);
 I=quadrature_on_sparse_grid(@(x)f(x,b) , Sr);
 
-
+%%
 % compare with exact value
 disp('----------')
 disp('quad error')
@@ -1073,33 +1084,36 @@ abs(I-I_ex)
 
 
 %% PART 3: INTEGRATION - RECYCLE EVALUATIONS FROM PREVIOUSLY COMPUTED GRIDS AND PARALLEL COMPUTATION
-
+%
 % just as evaluate_on_sparse_grid, quadrature_on_sparse_grid provides evaluation recycling and
 % parallel evaluation
  
 clc
-clear
+clearvars
 
 f = @(x,b) prod(1./sqrt(x+b));
 b=5;
 N = 2;
 
+%%
 % the starting grid
 w = 7;
 S = create_sparse_grid(N,w,@(n) knots_CC(n,-2,1,'prob'),@lev2knots_doubling);
 Sr = reduce_sparse_grid(S);
 [IS,evals_S]=quadrature_on_sparse_grid(@(x)f(x,b), Sr);
 
+%%
 % the new grid
 w = 8;
 T = create_sparse_grid(N,w,@(n) knots_CC(n,-2,1,'prob'),@lev2knots_doubling);
 Tr = reduce_sparse_grid(T);
+%%
 % the recycling call. Other optional arguments can turn on parallel
 % evaluation and tune the tolerance for two points to be considered equal.
 % See help quadrature_on_sparse_grid and test_evaluate_on_sparse_grid
 IT_rec=quadrature_on_sparse_grid(@(x)f(x,b),T,Tr,evals_S,S,Sr);
 
-
+%%
 % the non-recycling call
 IT=quadrature_on_sparse_grid(@(x)f(x,b) , Tr);
 
@@ -1113,6 +1127,9 @@ IT2= quadrature_on_sparse_grid(@(x)f(x,b) , T, Tr, [],[],[],0);
 % the parallel call with recycling
 IT3=quadrature_on_sparse_grid(@(x)f(x,b),T,Tr,evals_S,S,Sr,0);
 
+if check_if_parallel_on()
+    close_parallel()
+end
 
 disp('-------------')
 disp('difference between the results')
@@ -1120,7 +1137,7 @@ disp('difference between the results')
 
 %% PART 3: INTEGRATION - HOW TO BUILD MORE COMPLEX SPARSE GRIDS. ANISOTROPIC GRIDS 
 
-clear
+clearvars
 clc
 
 f = @(x,b) prod(1./sqrt(x+b)); 
@@ -1129,7 +1146,7 @@ N = 4;
 I_1d=(2*sqrt(1+b)-2*sqrt(-1+b)); 
 I_ex = I_1d^N;
 
-
+%%
 % specify a rule like in Back Nobile Tamellini Tempone, `Stochastic Spectral Galerkin and Collocation...a  numerical comparison''
 rates=[1 2 2 2];
 knots=@(n) knots_uniform(n,-1,1,'nonprob');
@@ -1148,12 +1165,12 @@ abs(I-I_ex)
 
 
 %% PART 3: INTEGRATION - HOW TO BUILD MORE COMPLEX SPARSE GRIDS. USE MULTIIIDX_BOX_SET
-
+%
 % As seen in the introduction, specify directly the set of multiindices involved. 
 % Here, we generate the box set of all multiindices <= of [3 5  2 3] in lexicographic order
 
 clc
-clear 
+clearvars 
 
 f = @(x,b) prod(1./sqrt(x+b)); 
 b=3; 
@@ -1168,7 +1185,7 @@ knots=@(n) knots_uniform(n,-1,1,'nonprob');
 S3=create_sparse_grid_multiidx_set(C,knots,@lev2knots_lin);
 
 
-
+%%
 % use it to compute integral (-1,1 Lebesgue measure)
 I=quadrature_on_sparse_grid(@(x) f(x,b),reduce_sparse_grid(S3));
 
@@ -1178,13 +1195,13 @@ disp('quad error')
 abs(I-I_ex)
 
 %% PART 3: INTEGRATION - CONVERGENCE STUDY
-
+%
 % see test_sparse_quadrature.m
 
 
 
 %% PART 4: INTERPOLATION ON A SPARSE GRID - BASICS
-
+%
 % the sparse grid also provides an interpolant / surrogate model for the original function. The
 % interpolant can be evaluated in non-grid points. 
 %
@@ -1192,7 +1209,7 @@ abs(I-I_ex)
 % the interpolation case. 
 
 clc
-clear
+clearvars
 f = @(x,b) prod(1./sqrt(x+b)); b=3; N = 4; 
 
 w=8;
@@ -1215,21 +1232,21 @@ max( abs( f_values-f(non_grid_points,b) ) )
 %% PART 4: INTERPOLATION ON A TENSOR GRID 
 
 % clc
-clear
+clearvars
 f = @(x,b) prod(1./sqrt(x+b)); 
 b=3; N = 2; 
 
+%%
 % let's build a tensor grid with the following choices
 idx = [10 8];
 knots=@(n) knots_uniform(n,-1,1,'nonprob');
 lev2knots = @lev2knots_lin;
 
-
+%%
 % create the tensor grid, convert it to sparse
 T = tensor_grid(N,lev2knots(idx),knots);  
 S = tensor_to_sparse(T);
 Sr = reduce_sparse_grid(S);
-
 
 %non_grid_points=rand(N,100); 
 non_grid_points=[0.5*ones(N,1), zeros(N,1)];
@@ -1244,11 +1261,11 @@ max( abs( f_values-f(non_grid_points,b) ) )
 
 
 %% PART 4: INTERPOLATION IN 1D
-
+%
 % for 1D interpolation, a dedicated function exists. It's called univariate_interpolant and can operate on
 % vector-valued function, like here below, where we interpolate a function with two components, i.e., F: R -> R^2
 
-clear
+clearvars
  
 % the two components of f
 f1 = @(x) x.^3; 
@@ -1280,20 +1297,18 @@ plot(x_eval,f2(x_eval),'DisplayName','true fun')
 %legend show
 
 
-
-
-
 %% PART 4: INTERPOLATION ON A SPARSE GRID -  INTERPOLATION ERROR ON SPARSE GRID POINTS
-
+%
 % since the sparse grid is a linear combination of several tensor grid interpolants, the interpolation
 % error in a point of the sparse grid is not necessarily zero, unless all tensor interpolats
 % include that point
 
 
 clc
-clear
+clearvars
 f = @(x,b) prod(1./sqrt(x+b)); b=3; N = 4; 
 
+%%
 % a sparse grid with non-nested points: interpolation error in sparse grid points will be
 % non-zero in general
 
@@ -1311,6 +1326,7 @@ disp('----------')
 disp('Interpolation error - non-nested grid')
 max( abs( f_values-f(non_grid_points,b) ) )
 
+%%
 % the interpolation error will instead be zero if we use nested points and
 % consider e.g. [0 0 0 0] which belongs to all of the tensor grids
 
@@ -1330,7 +1346,7 @@ max( abs( f_values-f(non_grid_points,b) ) )
 
 %% PART 4: INTERPOLATION ON A SPARSE GRID -  PLOT SPARSE GRIDS INTERPOLANT - case N=2
 
-clear
+clearvars
 
 % define sparse grid over [4,6] x [1,5]
 N=2;
@@ -1377,7 +1393,7 @@ axis square
 
 %% as expected, the interpolant might be bad if equispaced point are used
 
-clear
+clearvars
 clc
 
 f = @(x) 1./(1+(5*x(1)).^2)*1./(1+(5*x(2)).^2); 
@@ -1423,7 +1439,7 @@ plot_sparse_grids_interpolant(S_ok,Sr_ok,domain,f_values_ok,'with_f_values','nb_
 
 %% case N=3
 
-clear
+clearvars
 
 % define sparse grid over [4,6] x [1,5] x [2 3]
 N=3;
@@ -1478,7 +1494,7 @@ axis square
 
 %% case N>3
 
-clear
+clearvars
 
 % define sparse grid over [-1,1]^7
 N=7;
@@ -1561,7 +1577,7 @@ axis square
 % more examples with different kinds of random variables / orthogonal polynomials can be found in test_convert_to_modal.m
 
 clc
-clear
+clearvars
 
 % the sparse grid
 N=2; 
@@ -1589,7 +1605,7 @@ nodal_values = 4*lege_eval_multidim(X,[4 0],-1,1)+ 2*lege_eval_multidim(X,[1 1],
 
 %% PART 6: SPARSE-GRIDS-BASED SENSITIVITY ANALYSIS - COMPUTE SOBOL INDICES OF A FUNCTION
 
-clear
+clearvars
 
 % define sparse grid 
 aa=[-1 -1 -1];
@@ -1635,7 +1651,7 @@ disp([Tot_Sob_i1 Tot_Sob_i2 Tot_Sob_i3 Tot_Sob_i4])
 
 %% PART 6: SPARSE-GRIDS-BASED SENSITIVITY ANALYSIS - COMPUTE GRADIENTS OF A SPARSE GRID INTERPOLANT (by finite differences)
 
-clear
+clearvars
 
 % define sparse grid over [4,6] x [1,5]
 N=2;

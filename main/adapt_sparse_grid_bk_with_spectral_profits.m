@@ -3,8 +3,7 @@ function adapted = adapt_sparse_grid(f,N_full,knots,lev2knots,prev_adapt,control
 %
 % ADAPTED = ADAPT_SPARSE_GRID(F,N_FULL,KNOTS,LEV2KNOTS,PREV_ADAPT,CONTROLS)
 %
-% Description:
-% computes a sparse grid adapted to the approximation of a function $F:\Gamma subset R^N_full \to R^V$
+% computes a sparse grid adapted to the approximation of a function F: \Gamma subset R^N_full \to R^V
 % according to some profit indicator. The implementation closely resembles the algorithm proposed in
 %
 % T. Gerstner, M. Griebel, Dimension–Adaptive Tensor–Product Quadrature, Computing 71, 65–87 (2003)
@@ -20,7 +19,7 @@ function adapted = adapt_sparse_grid(f,N_full,knots,lev2knots,prev_adapt,control
 % among those already explored, adds it to the sparse grid, computes the profits of all its neighbouring
 % indices (see controls.prof) and adds them to the list of explored indices.
 %
-% Inputs:
+%
 % --> F is a function-handle, taking as input a column vector (N_full components) and returning a column-vector value (V components).
 %
 % --> N_full is a scalar, denotes the dimension of the space \Gamma over which F and the sparse grid are defined.
@@ -179,7 +178,7 @@ function adapted = adapt_sparse_grid(f,N_full,knots,lev2knots,prev_adapt,control
 %
 %
 %
-% Outputs :
+%
 % --> ADAPTED is a struct containing the results of the algorithms. The same structure can be passed
 %     as input (PREV_ADAPT) to resume the computation. Its fields are
 %
@@ -288,6 +287,7 @@ controls = default_controls(controls,N_full);
 % --> var_with_pts: vector of variables in which we have actually put points.
 %                   length(var_with_pts) + controls.var_buffer_size = N_curr
 % --> N_log     : for every iteration, the value of N_curr
+% --> poly_log  : log of the polynomial terms (as a vector of degrees) added to the approximation
 % --> prof_tol  : the profit tolerance that is either derivied from spectral plateaus or set by controls.
 
 % we need to distinguish the full dimension of the parameter space (N_tot) and the dimensional of the subspace
@@ -300,7 +300,7 @@ controls = default_controls(controls,N_full);
 N = controls.var_buffer_size;
 
 
-[N,N_log,var_with_pts,S,Sr,f_on_Sr,I,I_log,idx,maxprof,idx_bin,profits,G,G_log,coeff_G,Hr,f_on_Hr,...
+[N,N_log,var_with_pts,S,Sr,f_on_Sr,I,I_log,poly_log,idx,maxprof,idx_bin,profits,G,G_log,coeff_G,Hr,f_on_Hr,...
     nb_pts,nb_pts_log,num_evals,intf, prof_tol] = start_adapt(f,N,knots,lev2knots,prev_adapt,controls);
 
 % Additional structures for plateau truncation
@@ -365,7 +365,15 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
 
     end
 
-    %-------------------------
+    %-------------------------------------------
+    % if we are interested in series representation and corresponding spectral profits
+    %-------------------------------------------
+    % Require the above compute_profit_idx step to ensure f_on_Tr is computed efficiently.
+    if controls.polyseries && M > 0
+        [profits, idx_bin, Ng, Prof_temp, profit_poly_td, polyseries_I, polyseries_coeffs,U_new,poly_already_exists] = compute_polyseries_profits(T,Tr, f_on_Tr,controls, I, N_full, poly_log);
+    end
+
+    %-------------------------------------------
     % update the list of profits
     %-------------------------------------------
 
@@ -504,6 +512,14 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
                 f_on_Sr = f_on_Tr;
                 intf = intnew;
 
+                %-------------------------------------------
+                % if we are interested in series representation
+                %-------------------------------------------
+                % Require the above compute_profit_idx step to ensure f_on_Tr is computed efficiently.
+                if controls.polyseries && M > 0
+                    [profits, idx_bin, Ng, Prof_temp, profit_poly_td, polyseries_I, polyseries_coeffs,U_new] = compute_polyseries_profits(T,Tr, f_on_Tr,controls, I, N_full, poly_log);
+                end
+
                 profits= [profits, Prof_temp]; %#ok<AGROW>
 
                 idx_bin = [idx_bin; Ng];  %#ok<AGROW>
@@ -517,6 +533,14 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
                 [maxprof,k]=max(profits);
                 idx=idx_bin(k,:);
 
+                %-------------------------------------------
+                % identify the polynomial terms introduced by idx
+                %-------------------------------------------
+                if controls.polyseries == true && M > 0
+                    new_poly = U_new(k).multi_indices;
+                else
+                    new_poly = [];
+                end
             else
                 if MATLAB_SPARSE_KIT_VERBOSE
                     disp('maximum number of variables to be explored reached, continuing as is')
@@ -536,7 +560,7 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
     %-------------------------------------------
     if controls.detect_plateau
         % construct a monotonically decreasing envelope above the coefficient norms
-        [polyseries_coeffs,polyseries_I, U] = convert_to_modal(S,Sr,f_on_Sr,controls.domain,controls.polytype);
+        [polyseries_coeffs,polyseries_I, U] = convert_to_modal(T,Tr,f_on_Tr,controls.domain,controls.polytype);
         [inds,env] = coeff_envelope(sum(polyseries_I,2),controls.op_vect(polyseries_coeffs',0));
         % Identify a profit tolerance on the spectral coefficents.
         [prof_tol, ipt, beta0, beta1, plateau_found] = plateaudetection(inds, env, controls);
@@ -551,7 +575,7 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
         % Set profits_masked to zero for saturated models
         % Note saturated_models is empty if controls.detect_plateaus ~= 1
         profits_masked = profits;
-        I_matrix = eye(size(idx_bin,2));
+        I = eye(size(idx_bin,2));
 
         for ii = 1:size(idx_bin,1)
             saturated = false(size(idx_bin, 1), 1);
@@ -562,16 +586,12 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
             else
                 % Calculate the lowest total degree of the newly introduced polynomials
                 % Do this by considering backwards neighbours
-                for jj = 1:size(I_matrix,1)
-                    if any(idx_bin(ii, 1:end) - I_matrix(jj,:) == 0)
-                        total_degree(jj) = inf;
-                    else
-                        total_degree(jj) = sum(lev2knots(idx_bin(ii, 1:end) - I_matrix(jj,:))-1, 2) + 1;
-                    end
+                for jj = 1:size(I,1)
+                    total_degree(jj) = sum(lev2knots(idx_bin(ii, 1:end) - I(jj,:)), 2) + 1;
                 end
 
                 % Check if the total degree meets the saturation threshold
-                if min(total_degree) >= saturated_ipt
+                if max(total_degree) >= saturated_ipt
                     saturated(ii) = true; % Mark as saturated
                 else
                     saturated(ii) = false; % Mark as not saturated
@@ -587,6 +607,8 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
     %-------------------------------------------
 
     I_log = [I_log; idx]; %#ok<AGROW>
+    poly_log = [poly_log; new_poly];
+    poly_log = unique(poly_log,'rows');
     I=sortrows([I; idx]); % note that I must be lexicog sorted for check_index_admissibility(Ng(m,:),I) to work
 
     idx_bin(k,:)=[];
@@ -635,6 +657,7 @@ private.G_log=G_log;
 private.coeff_G=coeff_G;
 private.I=I;
 private.I_log = I_log;
+private.poly_log = poly_log;
 private.maxprof=maxprof;
 private.prof_tol= prof_tol;
 private.idx=idx;

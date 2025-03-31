@@ -2,7 +2,8 @@ function [S,I,coeff] = create_sparse_grid_add_multiidx(new_idx,S_in,I_in,coeff_i
 
 % CREATE_SPARSE_GRID_ADD_MULTIIDX produces a grid obtained by adding a single multi-idx to a previously existing grid.
 %
-% [S,I,COEFF] = CREATE_SPARSE_GRID_ADD_MULTIIDX(NEW_IDX,S_IN,I_IN,COEFF_IN,KNOTS,LEV2KNOTS) takes as inputs:
+% [S,I,COEFF] = CREATE_SPARSE_GRID_ADD_MULTIIDX(NEW_IDX,S_IN,I_IN,COEFF_IN,KNOTS,LEV2KNOTS)
+% Inputs:
 %       --> an index NEW_IDX. It must be admissible wrt to the index set I_IN described below, and this condition **won't** be checked
 %           by the function
 %       --> a sparse grid S_IN to which NEW_IDX should be added
@@ -14,8 +15,7 @@ function [S,I,coeff] = create_sparse_grid_add_multiidx(new_idx,S_in,I_in,coeff_i
 %           Therefore, COEFF_IN cannot be taken as [S_in.coeff]. Instead, use COEFF_IN = COMBINATION_TECHNIQUE(I_IN)           
 %       --> KNOTS, LEV2KNOTS are the usual arguments to specify knots and lev2knots (see e.g. CREATE_SPARSE_GRID)
 %
-%       The function outputs:
-%
+% Outputs:
 %       --> S, the new sparse grid
 %       --> I, the new multiidx set, i.e. I = sortrows([I_IN; NEW_IDX])
 %       --> COEFF, the updated vector of coefficients of the combination technique

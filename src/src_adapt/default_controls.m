@@ -31,7 +31,7 @@ if ~isfield(controls,'paral')
     controls.paral=NaN;
 end
 if ~isfield(controls,'prof')
-    controls.prof='Linf/new_points';
+    controls.prof='deltaint/new_points';
 end
 if ~isfield(controls,'plot')
     controls.plot=false;
@@ -67,6 +67,10 @@ end
 if ~isfield(controls,'polyseries')
     controls.polyseries = false;
 end
+if ~isfield(controls,'detect_plateau')
+    controls.detect_plateau = false;
+end
+
 if ~isfield(controls,'polytype')
    controls.polytype = 'chebyshev'; 
 end

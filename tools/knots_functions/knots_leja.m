@@ -67,8 +67,8 @@ switch type
     case 'p_disk'
         [x,w] = p_disk_leja_tab(n);
         %--------------------------------------------------------
-    case 'leja_generator'
-        [x,w] = leja_generator(n);
+    case 'bk'
+        [x,w] = leja_bk(n);
 
         %--------------------------------------------------------
     otherwise
@@ -3209,7 +3209,7 @@ switch n
         error('SparseGKit:OutOfTable','too many points')
 end
 
-function [x,w] = leja_generator(n)
+function [x,w] = leja_bk(n)
 switch n
     case 1
         x = [0.0000000000000000 ;];

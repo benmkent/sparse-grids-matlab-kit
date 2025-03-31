@@ -1,4 +1,4 @@
-function [N,N_log,var_with_pts,S,Sr,f_on_Sr,I,I_log,poly_log,idx,maxprof,idx_bin,profits,G,G_log,coeff_G,Hr,f_on_Hr,...
+function [N,N_log,var_with_pts,S,Sr,f_on_Sr,I,I_log,idx,maxprof,idx_bin,profits,G,G_log,coeff_G,Hr,f_on_Hr,...
     nb_pts,nb_pts_log,num_evals,intf, prof_tol] = start_adapt(f,N,knots,lev2knots,prev_adapt,controls)
 % START_ADAPT Initialises or resumes the ADAPT_SPARSE_GRID algorithm
 %
@@ -51,7 +51,6 @@ if isempty(prev_adapt)
     N_log = N;
     I=ones(1,N);
     I_log = ones(1,N);
-    poly_log = ones(1,N);
     idx = ones(1,N);
     maxprof = Inf;
 
@@ -88,7 +87,6 @@ else
     var_with_pts = prev_adapt.private.var_with_pts;
     I=prev_adapt.private.I;
     I_log = prev_adapt.private.I_log;
-    poly_log = prev_adapt.private.poly_log;
     idx = prev_adapt.private.idx;
     maxprof = prev_adapt.private.maxprof;
 
