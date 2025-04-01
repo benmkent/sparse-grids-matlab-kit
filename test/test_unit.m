@@ -499,6 +499,8 @@ function iseq = isequal_sgmk(L,S)
         elseif isreal(L.(tested_fields{t})) % test up to tol
             if max( abs( L.(tested_fields{t})-S.(tested_fields{t}) ) ) > 1e-15 
                 iseq = false;
+                L.(tested_fields{t})
+                S.(tested_fields{t})
                 error(['error in test of ',tested_fields{t}])
             end
             
@@ -508,6 +510,8 @@ function iseq = isequal_sgmk(L,S)
             Scell2mat = cell2mat(S.(tested_fields{t}));
             if max(abs( Lcell2mat-Scell2mat ) ) > 1e-15 
                 iseq = false;
+                Lcell2mat
+                Scell2mat
                 error(['error in test of ',tested_fields{t}])
             end
             
