@@ -1,0 +1,42 @@
+name: Generate Coverage
+
+on: [push]
+
+jobs:
+  my-job:
+    name: Run MATLAB Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+
+      - name: Run tests
+        uses: matlab-actions/run-tests@v2  
+        with:
+          code-coverage-cobertura: test/coverage.xml
+          source-folder: src; tools; main; test
+
+      - name: Upload MATLAB Test & Coverage Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: matlab-coverage-results
+          path: |
+            test/coverage.xml
+            
+      - name: Code Coverage Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: test/coverage.xml
+          badge: true
+          fail_below_min: true
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: true
+          indicators: true
+          output: both
+          thresholds: '60 80'
