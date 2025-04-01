@@ -372,7 +372,7 @@ save('test_unit_gradient_and_hessian','grad','Hess');
 clc
 clear
 
-f=@(x) 1./(x(1)^2+x(2)^2 + 0.3);
+f=@(x) 1./(x(1)^2+2*x(2)^2 + 0.3);
 
 N = 2; 
 a = -1; b = 1;
