@@ -46,10 +46,9 @@ jobs:
         if: always()
         run: |
           # Install a coverage reporting tool (e.g., 'cobertura-coverage' GitHub Action)
-          npm install -g cobertura-coverage
-
+          pip install pycobertura
           # Parse the Cobertura XML report and generate summary for GitHub Actions
-          cobertura-coverage --file test/coverage.xml > cobertura-summary.md
+          pycobertura show --format markdown test/coverage.xml > cobertura-summary.md
 
           # Add summary to GitHub Actions output
           echo "### Cobertura Coverage Summary" >> $GITHUB_STEP_SUMMARY
