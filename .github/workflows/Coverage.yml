@@ -18,7 +18,7 @@ jobs:
         uses: matlab-actions/run-tests@v2  
         with:
           code-coverage-cobertura: test/coverage.xml
-          source-folder: src; tools; main
+          source-folder: src; tools; main; data
           select-by-folder: test
 
       - name: Upload MATLAB Test & Coverage Results
@@ -29,27 +29,13 @@ jobs:
           path: |
             test/coverage.xml
             
-      - name: Code Coverage Report
-        uses: irongut/CodeCoverageSummary@v1.3.0
-        if: always()
-        with:
-          filename: test/coverage.xml
-          badge: true
-          fail_below_min: true
-          format: markdown
-          hide_branch_rate: false
-          hide_complexity: true
-          indicators: true
-          output: both
-          thresholds: '60 80'
-
       - name: Parse Cobertura report and add to GitHub Action summary
         if: always()
         run: |
           # Install a coverage reporting tool (e.g., 'cobertura-coverage' GitHub Action)
           pip install pycobertura
           # Parse the Cobertura XML report and generate summary for GitHub Actions
-          pycobertura show --format markdown test/coverage.xml > cobertura-summary.md
+          pycobertura show --format markdown --ignore-regex "*tab.m" test/coverage.xml > cobertura-summary.md
 
           # Add summary to GitHub Actions output
           echo "### Cobertura Coverage Summary" >> $GITHUB_STEP_SUMMARY

@@ -18,7 +18,7 @@ jobs:
         uses: matlab-actions/run-tests@v2  
         with:
           test-results-junit: test/results.xml
-          source-folder: src; tools; main
+          source-folder: src; tools; main; data
           select-by-folder: test
 
       - name: Upload MATLAB Test Results
