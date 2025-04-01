@@ -1,4 +1,4 @@
-name: Generate Coverage
+name: Coverage
 
 on: [push]
 
@@ -35,7 +35,7 @@ jobs:
           # Install a coverage reporting tool (e.g., 'cobertura-coverage' GitHub Action)
           pip install pycobertura
           # Parse the Cobertura XML report and generate summary for GitHub Actions
-          pycobertura show --format markdown --ignore-regex "*tab.m" test/coverage.xml > cobertura-summary.md
+          pycobertura show --format markdown --ignore-regex "data/*" test/coverage.xml > cobertura-summary.md
 
           # Add summary to GitHub Actions output
           echo "### Cobertura Coverage Summary" >> $GITHUB_STEP_SUMMARY
