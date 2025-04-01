@@ -49,6 +49,10 @@ if nargin==4
 end
 
 % as a first step, we load the precomputed knots
+current_dir = fileparts(mfilename('fullpath'));
+% Build the relative path (e.g., to a file "data/input.txt" located in the "data" subfolder)
+relative_path = fullfile(current_dir, 'data');
+addpath(relative_path);
 
 switch type
             
