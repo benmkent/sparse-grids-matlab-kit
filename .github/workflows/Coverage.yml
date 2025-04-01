@@ -18,7 +18,7 @@ jobs:
         uses: matlab-actions/run-tests@v2  
         with:
           code-coverage-cobertura: test/coverage.xml
-          source-folder: src; tools; main; test
+          source-folder: src; tools; main
           select-by-folder: test
 
       - name: Upload MATLAB Test & Coverage Results
