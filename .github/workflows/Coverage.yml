@@ -42,5 +42,15 @@ jobs:
           output: both
           thresholds: '60 80'
 
-      - name: Write to Job Summary
-        run: cat **code-coverage-results.md** >> $GITHUB_STEP_SUMMARY
+      - name: Parse Cobertura report and add to GitHub Action summary
+        if: always()
+        run: |
+          # Install a coverage reporting tool (e.g., 'cobertura-coverage' GitHub Action)
+          npm install -g cobertura-coverage
+
+          # Parse the Cobertura XML report and generate summary for GitHub Actions
+          cobertura-coverage --file test/coverage.xml > cobertura-summary.md
+
+          # Add summary to GitHub Actions output
+          echo "### Cobertura Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          cat cobertura-summary.md >> $GITHUB_STEP_SUMMARY
