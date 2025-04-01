@@ -19,6 +19,7 @@ jobs:
         with:
           test-results-junit: test/results.xml
           source-folder: src; tools; main; test
+          select-by-folder: test
 
       - name: Upload MATLAB Test Results
         uses: actions/upload-artifact@v4
