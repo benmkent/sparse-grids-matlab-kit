@@ -1,4 +1,4 @@
-name: Test
+name: Test and Coverage
 
 on: [push]
 
@@ -17,6 +17,7 @@ jobs:
       - name: Run tests
         uses: matlab-actions/run-tests@v2  
         with:
+          code-coverage-cobertura: test/coverage.xml
           test-results-junit: test/results.xml
           source-folder: src; tools; main; data
           select-by-folder: test
@@ -36,3 +37,26 @@ jobs:
           name: Tests            # Name of the check run which will be created
           path: test/results.xml    # Path to test results
           reporter: jest-junit        # Format of test results
+  my-job2:
+    name: Run MATLAB Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Upload MATLAB Test & Coverage Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: matlab-coverage-results
+          path: |
+            test/coverage.xml
+            
+      - name: Parse Cobertura report and add to GitHub Action summary
+        if: always()
+        run: |
+          # Install a coverage reporting tool (e.g., 'cobertura-coverage' GitHub Action)
+          pip install pycobertura
+          # Parse the Cobertura XML report and generate summary for GitHub Actions
+          pycobertura show --format markdown --ignore-regex "data/*" test/coverage.xml > cobertura-summary.md
+          # Add summary to GitHub Actions output
+          echo "### Cobertura Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          cat cobertura-summary.md >> $GITHUB_STEP_SUMMARY
