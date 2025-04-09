@@ -9,7 +9,7 @@ site_url: https://benmkent.github.io/sparse-grids-matlab-kit
 repo_name: 'benmkent/sparse-grids-matlab-kit'
 repo_url: 'https://github.com/benmkent/sparse-grids-matlab-kit'
 
-use_directory_urls: false
+use_directory_urls: true
 nav:
   - Home: ../README.md
   - Examples:
