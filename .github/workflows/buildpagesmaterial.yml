@@ -4,6 +4,7 @@ on:
     branches:
       - master 
       - main
+      - plateaudetection
 permissions:
   contents: write
 jobs:
