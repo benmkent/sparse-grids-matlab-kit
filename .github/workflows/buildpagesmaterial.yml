@@ -66,5 +66,9 @@ jobs:
         with:
           name: published-docs-files
           path: docs/  # Download all files into the docs folder
+          
+      - name: Copy README.md to docs/index.md
+        run: |
+          cp README.md docs/index.md
 
       - run: mkdocs gh-deploy --force
