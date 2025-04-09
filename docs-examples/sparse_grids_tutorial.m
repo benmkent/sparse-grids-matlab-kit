@@ -869,26 +869,28 @@ w=4;
 T=create_sparse_grid(N,w,@(n) knots_uniform(n,-1,1),@lev2knots_lin);
 Tr= reduce_sparse_grid(T);
 
-if ~check_if_parallel_on()
-    activate_parallel() % optional argument to specify how many workers
-end
-X=0;
-evals_1=evaluate_on_sparse_grid(f,T,Tr,[],[],[],X);
-X=10;
-evals_2=evaluate_on_sparse_grid(f,T,Tr,[],[],[],X);
-X=100;
-evals_3=evaluate_on_sparse_grid(f,T,Tr,evaluate_on_sparse_grid(f,Sr),S,Sr,X,1e-14);
+try
+    if ~check_if_parallel_on()
+        activate_parallel() % optional argument to specify how many workers
+    end
+    X=0;
+    evals_1=evaluate_on_sparse_grid(f,T,Tr,[],[],[],X);
+    X=10;
+    evals_2=evaluate_on_sparse_grid(f,T,Tr,[],[],[],X);
+    X=100;
+    evals_3=evaluate_on_sparse_grid(f,T,Tr,evaluate_on_sparse_grid(f,Sr),S,Sr,X,1e-14);
 
-figure
-plot(evals_1)
-hold on
-plot(evals_2,'x')
-plot(evals_3,'o')
+    figure
+    plot(evals_1)
+    hold on
+    plot(evals_2,'x')
+    plot(evals_3,'o')
 
-
-
-if check_if_parallel_on()
-    close_parallel()
+    if check_if_parallel_on()
+        close_parallel()
+    end
+catch e
+    display(e)
 end
 
 % this command will now throw an error

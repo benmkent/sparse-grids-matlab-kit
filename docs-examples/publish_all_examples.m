@@ -1,71 +1,30 @@
+
+%% Publish
+addpath(genpath('../'))
+
+close all
 filePath = 'sparse_grids_tutorial.m';
-options.format = 'html';                 % Output format as HTML
-options.outputDir = ('../docs'); % Directory for published files
-options.figureSnapMethod = 'print';      % Use the print method for figures
-options.maxOutputLines = 10;             % Limit output to 10 lines
-publish(filePath, options);
+publish(filePath, 'format','html','stylesheet','stylesheet.xsl','maxOutputLines',20,'figureSnapMethod','print','outputDir','../docs','catchError',true);
 
-filePath = 'test_compute_normal_leja_and_convergence_test.m';
-options.format = 'html';                 % Output format as HTML
-options.outputDir = ('../docs'); % Directory for published files
-options.figureSnapMethod = 'print';      % Use the print method for figures
-options.maxOutputLines = 10;             % Limit output to 10 lines
-publish(filePath, options);
-
-filePath = 'test_convert_to_modal.m';
-options.format = 'html';                 % Output format as HTML
-options.outputDir = ('../docs'); % Directory for published files
-options.figureSnapMethod = 'print';      % Use the print method for figures
-options.maxOutputLines = 10;             % Limit output to 10 lines
-publish(filePath, options);
-
-filePath = 'test_evaluate_on_sparse_grids';
-options.format = 'html';                 % Output format as HTML
-options.outputDir = ('../docs'); % Directory for published files
-options.figureSnapMethod = 'print';      % Use the print method for figures
-options.maxOutputLines = 10;             % Limit output to 10 lines
-publish(filePath, options);
-
-filePath = 'test_sparse_interpolation';
-options.format = 'html';                 % Output format as HTML
-options.outputDir = ('../docs'); % Directory for published files
-options.figureSnapMethod = 'print';      % Use the print method for figures
-options.maxOutputLines = 10;             % Limit output to 10 lines
-publish(filePath, options);
-
-filePath = 'test_sparse_quadrature';
-options.format = 'html';                 % Output format as HTML
-options.outputDir = ('../docs'); % Directory for published files
-options.figureSnapMethod = 'print';      % Use the print method for figures
-options.maxOutputLines = 10;             % Limit output to 10 lines
-publish(filePath, options);
-
+close all
 filePath = 'test_spectral';
-options.format = 'html';                 % Output format as HTML
-options.outputDir = ('../docs'); % Directory for published files
-options.figureSnapMethod = 'print';      % Use the print method for figures
-options.maxOutputLines = 10;             % Limit output to 10 lines
-publish(filePath, options);
+publish(filePath, 'format','html','stylesheet','stylesheet.xsl','maxOutputLines',20,'figureSnapMethod','print','outputDir','../docs','catchError',true);
 
+close all
 filePath = 'tutorial_adaptive';
-options.format = 'html';                 % Output format as HTML
-options.outputDir = ('../docs'); % Directory for published files
-options.figureSnapMethod = 'print';      % Use the print method for figures
-options.maxOutputLines = 10;             % Limit output to 10 lines
-publish(filePath, options);
+publish(filePath, 'format','html','stylesheet','stylesheet.xsl','maxOutputLines',20,'figureSnapMethod','print','outputDir','../docs','catchError',true);
 
+close all
 filePath = 'tutorial_PlateauSC_adaptive';
-options.format = 'html';                 % Output format as HTML
-options.outputDir = ('../docs'); % Directory for published files
-options.figureSnapMethod = 'print';      % Use the print method for figures
-options.maxOutputLines = 10;             % Limit output to 10 lines
-publish(filePath, options);
+publish(filePath, 'format','html','stylesheet','stylesheet.xsl','maxOutputLines',20,'figureSnapMethod','print','outputDir','../docs','catchError',true);
+
+%% Copy to .md
 
 % Specify the directory containing the .html files
 folder = '../docs/';
     
 % Get a list of all .html files in the folder
-files = dir(folder, '*.html');
+files = dir(fullfile(folder, '*.html'));
 
 % Loop through each .html file and copy it with a .md extension
 for i = 1:length(files)
@@ -74,10 +33,38 @@ for i = 1:length(files)
     
     % Construct the new file path with .md extension
     [~, name, ~] = fileparts(files(i).name);
+    txtFile = fullfile(folder, [name, '.txt']);
     mdFile = fullfile(folder, [name, '.md']);
     
     % Copy the content of the .html file to the .md file
-    copyfile(htmlFile, mdFile);
-    
+    copyfile(htmlFile, txtFile);
+
+    fid = fopen(txtFile, 'rt');  % Open the file for reading (text mode)
+    if fid == -1
+        error('File not found or cannot be opened.');
+    end
+
+    fileContent = fread(fid, '*char')';  % Read the file contents as a string
+    fclose(fid);  % Close the file
+    % Perform find and replace
+    oldString = 'ENDHTML ';  % The text you want to find
+    newString = ['</html>',newline];  % The text you want to replace it with
+    fileContent = strrep(fileContent, oldString, newString);  % Replace text
+    oldString = 'STARTHTML';  % The text you want to find
+    newString = [newline,'<html>'];  % The text you want to replace it with
+    fileContent = strrep(fileContent, oldString, newString);  % Replace text
+
+    % Write the modified content back to the file
+    fid = fopen(txtFile, 'wt');  % Open the file for writing (text mode)
+    if fid == -1
+        error('File cannot be opened for writing.');
+    end
+
+    fprintf(fid, '%s', fileContent);  % Use %s to write the string with the newline
+    fclose(fid);  % Close the file
+    copyfile(txtFile, mdFile);
+    delete(txtFile);
+    delete(htmlFile);
+
     fprintf('Copied: %s to %s\n', htmlFile, mdFile);
 end
