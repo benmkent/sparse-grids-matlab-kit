@@ -1,4 +1,5 @@
 function [x,w] = knots_leja(n,x_a,x_b,type,whichrho)
+
 % [X,W] = KNOTS_LEJA(N,A,B,<type>,'prob') returns N Leja points of type <type> between A and B, 
 %   for the approximation of
 %
