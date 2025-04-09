@@ -1,57 +1,72 @@
-name: ci 
+name: Publish Docs
+
 on:
   push:
     branches:
       - master 
       - main
       - plateaudetection
+
 permissions:
   contents: write
+
 jobs:
   publish:
-      name: Run MATLAB Script
-      runs-on: ubuntu-latest
-      steps:
-        - name: Check out repository
-          uses: actions/checkout@v4
-        - name: Set up MATLAB
-          uses: matlab-actions/setup-matlab@v2
-          with:
-            release: R2024a
-        - name: Run script
-          uses: matlab-actions/run-command@v2
-          with:
-            command: cd docs-examples/, publish_all_examples
+    name: Run MATLAB Script
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+        with:
+          release: R2024a
+
+      - name: Run script
+        uses: matlab-actions/run-command@v2
+        with:
+          command: |
+            cd docs-examples/
+            publish_all_examples  # Ensure this is a valid command or script
             
-        - name: Upload all files from a folder
-          uses: actions/upload-artifact@v2
-          with:
-            name: published-docs-files
-            path: docs/*
+      - name: Upload all files from a folder
+        uses: actions/upload-artifact@v2
+        with:
+          name: published-docs-files
+          path: docs/  # Upload everything under the docs directory
+
   deploy:
     runs-on: ubuntu-latest
     needs: publish
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
+        
       - name: Configure Git Credentials
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+        
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
+        
       - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV 
+      
       - uses: actions/cache@v4
         with:
           key: mkdocs-material-${{ env.cache_id }}
           path: .cache 
           restore-keys: |
             mkdocs-material-
+        
       - run: pip install mkdocs-material
-      
+
       - name: Download all files from a folder
         uses: actions/download-artifact@v2
         with:
-           name: published-docs-files
-           path: docs/*
+          name: published-docs-files
+          path: docs/  # Download all files into the docs folder
+
       - run: mkdocs gh-deploy --force
