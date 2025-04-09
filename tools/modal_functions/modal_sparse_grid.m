@@ -4,8 +4,8 @@ function Mr=modal_sparse_grid(S,Sr,nodal_values,domain,flags,~)
 % This structure is enough to reconstruct the polynomial, and also to
 % exploit its spectral representation.
 %
-% Mr = MODAL_SPARSE_GRID(S,Sr,nodal_values,domain,flags,~) 
-%       Mr is a structure of modal polynomial degrees and corresponsing spectral coefficients 
+% Mr = MODAL_SPARSE_GRID(S,Sr,nodal_values,domain,flags,~)
+%       Mr is a structure of modal polynomial degrees and corresponsing spectral coefficients
 %       S is the sparse grid
 %       Sr is the reduced sparse grid
 %       nodal_values is the function evaluations on the reduced sparse grid
@@ -22,11 +22,11 @@ function Mr=modal_sparse_grid(S,Sr,nodal_values,domain,flags,~)
 % See LICENSE.txt for license
 %----------------------------------------------------
 
-% fix input 
+% fix input
 errmsg=[' Please note that CONVERT_TO_MODAL does not accept INTERVAL_MAP '...
-        'input argument any longer, and FLAG input argument is now mandatory. '...
-        'Type help convert_to_modal for help. '...
-        'This error message will not be shown in future releases of SPARSE-GRID-MATLAB-KIT'];
+    'input argument any longer, and FLAG input argument is now mandatory. '...
+    'Type help convert_to_modal for help. '...
+    'This error message will not be shown in future releases of SPARSE-GRID-MATLAB-KIT'];
 
 if nargin==4
     error('SparseGKit:WrongInput',strcat('not enough input arguments.',errmsg))
@@ -36,12 +36,12 @@ if any(~ismember(flags,{'legendre','chebyshev','hermite','laguerre','generalized
     error('SparseGKit:WrongInput',strcat('One or more strings in FLAGS unrecognized. ',errmsg));
 end
 
-if iscell(flags) && ~iscell(domain) 
-    errmsg = ['Input argument DOMAIN must be a cell array. ' ... 
-            'Please note that CONVERT_TO_MODAL has been changed after release 18.10. ' ...
-            'The domain for the case of polynomials of "mixed" type is now a cell array, each cell containing the domain for the corresponding polynomial. ' ...
-            'Type help convert_to_modal for help. '...
-            'This message will disappear from future relesases of SPARSE-GRID-MATLAB-KIT.'];
+if iscell(flags) && ~iscell(domain)
+    errmsg = ['Input argument DOMAIN must be a cell array. ' ...
+        'Please note that CONVERT_TO_MODAL has been changed after release 18.10. ' ...
+        'The domain for the case of polynomials of "mixed" type is now a cell array, each cell containing the domain for the corresponding polynomial. ' ...
+        'Type help convert_to_modal for help. '...
+        'This message will disappear from future relesases of SPARSE-GRID-MATLAB-KIT.'];
     error('SparseGKit:WrongInput',strcat(errmsg));
 end
 

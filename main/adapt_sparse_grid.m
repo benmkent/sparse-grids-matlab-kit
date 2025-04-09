@@ -390,14 +390,6 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
     [maxprof,k]=max(profits);
     idx=idx_bin(k,:);
 
-    %-------------------------------------------
-    % identify polynomial terms introduced by the new multi-index idx
-    %-------------------------------------------
-    if controls.polyseries == true && M > 0
-        new_poly = U_new(k).multi_indices;
-    else
-        new_poly = [];
-    end
 
     %-------------------------------------------
     % now we take care of possibly changing the variables buffer, i.e., adding a new variable to be explored
@@ -608,7 +600,6 @@ if ~controls.nested && strcmp(controls.recycling,'priority_to_evaluation')
     Hr= reduce_sparse_grid(Hr,controls.pts_tol);
     f_on_Hr = f_on_Hr(:,Hr.m); % here I remove duplicates in f_on_Hr too
 end
-
 
 adapted.N=N;
 adapted.S=S;

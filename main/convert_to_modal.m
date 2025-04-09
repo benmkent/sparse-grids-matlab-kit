@@ -6,11 +6,11 @@ function [modal_coeffs,K,U] = convert_to_modal(S,Sr,nodal_values,domain,flags,~)
 % [MODAL_COEFFS,K] = CONVERT_TO_MODAL(S,SR,NODAL_VALUES,DOMAIN,'legendre') returns the Legendre expansion
 %       of the sparse grid interpolant. S is a sparse grid, SR is its reduced counterpart, NODAL_VALUES
 %       are the values of the target function (say F) evaluated on the reduced sparse grid, and has the same
-%       size of e.g. F_EVAL, output of EVALUATE_ON_SPARSE_GRID. 
+%       size of e.g. F_EVAL, output of EVALUATE_ON_SPARSE_GRID.
 %
-%       More precisely, if F: R^N -> R^V and SR.KNOTS contains M points in R^N, then 
+%       More precisely, if F: R^N -> R^V and SR.KNOTS contains M points in R^N, then
 %       SR.KNOTS is a matrix NxM and NODAL_VALUES is a matrix VxM, i.e.,
-%       evaluations of F on different points of SR must be stored in NODAL_VALUES as columns. 
+%       evaluations of F on different points of SR must be stored in NODAL_VALUES as columns.
 %       If F is a scalar-valued function then NODAL_VALUES is a row-vector
 %
 %       DOMAIN is a 2xN matrix = [a1, a2, a3, ...; b1, b2, b3, ...] defining the lower and upper bound
@@ -28,7 +28,7 @@ function [modal_coeffs,K,U] = convert_to_modal(S,Sr,nodal_values,domain,flags,~)
 %
 % [MODAL_COEFFS,K] = CONVERT_TO_MODAL(S,SR,NODAL_VALUES,DOMAIN,'laguerre') returns the Laguerre expansion
 %       of the sparse grid interpolant. Here, DOMAIN is a 1XN matrix = [lambda1, lambda2, lambda3, ...]
-%       i.e. the n-th variable of the sparse grid space has exponential distribution with parameter lambda_n 
+%       i.e. the n-th variable of the sparse grid space has exponential distribution with parameter lambda_n
 %
 % [MODAL_COEFFS,K] = CONVERT_TO_MODAL(S,SR,NODAL_VALUES,DOMAIN,'generalized laguerre') returns the generalized Laguerre expansion
 %       of the sparse grid interpolant. Here, DOMAIN is a 2XN matrix = [alpha1, alpha2, alpha3, ...; beta1, beta2, beta3, ...]
@@ -37,7 +37,7 @@ function [modal_coeffs,K,U] = convert_to_modal(S,Sr,nodal_values,domain,flags,~)
 % [MODAL_COEFFS,K] = CONVERT_TO_MODAL(S,SR,NODAL_VALUES,DOMAIN,'jacobi') returns the Jacobi expansion
 %       of the sparse grid interpolant. Here, DOMAIN is a 4XN matrix = [alpha1, alpha2, alpha3, ...; beta1, beta2, beta3, ...; a1, a2, a3, ...; b1, b2, b3, ...]
 %       i.e. the n-th variable of the sparse grid space has Beta distribution with parameters alpha_n and beta_n on the interval [a_n,b_n]
-%      
+%
 % [MODAL_COEFFS,K] = CONVERT_TO_MODAL(S,SR,NODAL_VALUES,DOMAIN,{<family1>,<family2>,<family3>,...}) returns the expansion
 %       of the sparse grid interpolant over polynomial of "mixed" type, according to the families specified in
 %       the last argument. For example:
@@ -45,9 +45,9 @@ function [modal_coeffs,K,U] = convert_to_modal(S,Sr,nodal_values,domain,flags,~)
 %       CONVERT_TO_MODAL(S,SR,NODAL_VALUES,DOMAIN,{'legendre','hermite','laguerre','jacobi','legendre'})
 %
 %       converts the sparse grid interpolant in a sum of multi-variate polynomials that are products of
-%       univariate Legendre polynomials (directions 1 and 5), Hermite (direction 2), Lagurre (direction 3) and Jacobi (direction 4). 
+%       univariate Legendre polynomials (directions 1 and 5), Hermite (direction 2), Lagurre (direction 3) and Jacobi (direction 4).
 %       Here DOMAIN is a cell array of lenght N where each cell contains the vector of the parameters (or a scalar value for the case 'laguerre')
-%       of the n-th family of polynomials. 
+%       of the n-th family of polynomials.
 %       E.g. in the case above
 %
 %       DOMAIN = {[a1;b1], [mu1;sigma1], lambda, [alpha2;beta2;a2;b2], [a3;b3]}
@@ -60,11 +60,11 @@ function [modal_coeffs,K,U] = convert_to_modal(S,Sr,nodal_values,domain,flags,~)
 %----------------------------------------------------
 
 
-% fix input 
+% fix input
 errmsg=[' Please note that CONVERT_TO_MODAL does not accept INTERVAL_MAP '...
-        'input argument any longer, and FLAG input argument is now mandatory. '...
-        'Type help convert_to_modal for help. '...
-        'This error message will not be shown in future releases of SPARSE-GRID-MATLAB-KIT'];
+    'input argument any longer, and FLAG input argument is now mandatory. '...
+    'Type help convert_to_modal for help. '...
+    'This error message will not be shown in future releases of SPARSE-GRID-MATLAB-KIT'];
 
 if nargin==4
     error('SparseGKit:WrongInput',strcat('not enough input arguments.',errmsg))
@@ -74,12 +74,12 @@ if any(~ismember(flags,{'legendre','chebyshev','hermite','laguerre','generalized
     error('SparseGKit:WrongInput',strcat('One or more strings in FLAGS unrecognized. ',errmsg));
 end
 
-if iscell(flags) && ~iscell(domain) 
-    errmsg = ['Input argument DOMAIN must be a cell array. ' ... 
-            'Please note that CONVERT_TO_MODAL has been changed after release 18.10. ' ...
-            'The domain for the case of polynomials of "mixed" type is now a cell array, each cell containing the domain for the corresponding polynomial. ' ...
-            'Type help convert_to_modal for help. '...
-            'This message will disappear from future relesases of SPARSE-GRID-MATLAB-KIT.'];
+if iscell(flags) && ~iscell(domain)
+    errmsg = ['Input argument DOMAIN must be a cell array. ' ...
+        'Please note that CONVERT_TO_MODAL has been changed after release 18.10. ' ...
+        'The domain for the case of polynomials of "mixed" type is now a cell array, each cell containing the domain for the corresponding polynomial. ' ...
+        'Type help convert_to_modal for help. '...
+        'This message will disappear from future relesases of SPARSE-GRID-MATLAB-KIT.'];
     error('SparseGKit:WrongInput',strcat(errmsg));
 end
 
@@ -94,15 +94,15 @@ nb_tensor_grids = size(S,2);
 
 
 % each tensor grid will result in vector of coefficients, u, that
-% are the coefficients of the modal (Legendre,Hermite) expansion of the 
-% lagrangian interpolant. To combine these coefficients properly, I need 
+% are the coefficients of the modal (Legendre,Hermite) expansion of the
+% lagrangian interpolant. To combine these coefficients properly, I need
 % to store not only the coefficients u themselves, but also the associated
-% multi-indices. I store this information into a structure array, U, 
-% whose lenght is nb_tensor_grids, with fields U(i).modal_coeffs, U(i).multi_indices, U(i).size (i.e. 
+% multi-indices. I store this information into a structure array, U,
+% whose lenght is nb_tensor_grids, with fields U(i).modal_coeffs, U(i).multi_indices, U(i).size (i.e.
 % how many polynomials are associated to each grid)
 
 % I will need this counter
-global_values_counter=0; 
+global_values_counter=0;
 
 % I also do a trick to preallocate U
 U(nb_tensor_grids).multi_indices=[];
@@ -110,17 +110,17 @@ U(nb_tensor_grids).size=[];
 U(nb_tensor_grids).modal_coeffs=[];
 
 for g = 1: nb_tensor_grids
-    
+
     % some of the grids in S structure are empty, so I skip them
     if isempty(S(g).knots)
         continue
     end
 
-    % recover the values of f on the current grid. 
+    % recover the values of f on the current grid.
     % To do this, I need to use Sr.n, that is the mapping from [S.knots] to Sr.knots
-    % To locate the knots of the g-th grid in the mapping Sr.n, i use global_values_counter    
+    % To locate the knots of the g-th grid in the mapping Sr.n, i use global_values_counter
     grid_knots = global_values_counter + 1 : ( global_values_counter + S(g).size );
-    
+
     % extract the values of the g-th grid. If nodal_values is vector-valued, because F:R^N -> R^V
     % then the evaluation of each component of F, F_1, F_2, ... F_V on each point of the tensor
     % grid must be in a column vector, therefore I need to transpose nodal_values
@@ -128,10 +128,10 @@ for g = 1: nb_tensor_grids
 
     % then update global_values_counter
     global_values_counter = global_values_counter + S(g).size ;
-        
+
     % and compute modal
     U(g) = compute_modal_tensor(S(g),S_values,domain,flags);
-    
+
 end
 
 % now I need to put together all the U.multi_indices, summing the coefficients that
@@ -149,7 +149,7 @@ All = zeros(tot_midx,N);
 all_coeffs = zeros(tot_midx,V);
 
 % this is the index that scrolls them
-l=0; 
+l=0;
 
 % fill All and all_coeffs
 for g = 1: nb_tensor_grids
@@ -160,8 +160,8 @@ for g = 1: nb_tensor_grids
 
     All(l+1:l+U(g).size,:) = U(g).multi_indices;
     all_coeffs(l+1:l+U(g).size,:) = U(g).modal_coeffs*S(g).coeff; % note that this one works even if on the left of = we want
-                                                                  % a row vector (row of all_coeffs) and on the right we have
-                                                                  % a column vector
+    % a row vector (row of all_coeffs) and on the right we have
+    % a column vector
     l=l+U(g).size;
 end
 
@@ -177,7 +177,7 @@ end
 % less, so I have to add a ficticious row at the end of All
 
 dAll_sorted=diff( [All_sorted; ...
-                   All_sorted(end,:)+1] );
+    All_sorted(end,:)+1] );
 
 % if a row of dAll_sorted is made of 0s then I have
 % to discard the corresponding row of All
@@ -206,6 +206,6 @@ for k= 1 : nb_modal_coeffs
         l=l+1;
         ss = ss+all_coeffs_sorted(l,:);
     end
-    modal_coeffs(k,:) = ss; 
+    modal_coeffs(k,:) = ss;
     l=l+1;
 end
