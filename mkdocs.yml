@@ -11,7 +11,7 @@ repo_url: 'https://github.com/benmkent/sparse-grids-matlab-kit'
 
 use_directory_urls: true
 nav:
-  - Home: ../README.md
+  - Home: index.md
   - Examples:
     - Sparse Grids Tutorial: sparse_grids_tutorial.md
     - Adaptive Sparse Grids Tutorial: tutorial_adaptive.md
