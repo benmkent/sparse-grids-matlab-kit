@@ -51,6 +51,12 @@ jobs:
     needs: test-job
 
     steps:            
+      - name: Download MATLAB Coverage Results
+        uses: actions/download-artifact@v4
+        with:
+          name: matlab-coverage-results
+          path: test  # restore to test/coverage.xml path
+        
       - name: Parse Cobertura report and add to GitHub Action summary
         if: always()
         run: |
