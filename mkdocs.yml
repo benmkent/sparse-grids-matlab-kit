@@ -1,0 +1,8 @@
+site_name: Sparse Grids MATLAB Toolkit
+theme: mkdocs
+nav:
+  - Home: ../README.m
+  - Examples:
+    - Sparse Grids Tutorial: sparse_grids_tutorial.html
+    - Adaptive Sparse Grids Tutorial: tutorial_adaptive.html
+    - PlateauSC  Tutorial: tutorial_PlateauSC_adaptive.html
