@@ -18,7 +18,7 @@ See LICENSE.txt for license.
 Take a look at:
   - RELEASE_NOTE.m for a detailed list of diffrences with the previous versions
   - SPARSE_GRIDS_TUTORIAL.m in the folder docs-examples for a gradual introduction to the code
-  - sparse grids matlab kit USER MANUAL, available at [https://sites.google.com/view/sparse-grids-kit/home]
+  - sparse grids matlab kit USER MANUAL, available at https://sites.google.com/view/sparse-grids-kit/home
 
 
 
