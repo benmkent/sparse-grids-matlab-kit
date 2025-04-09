@@ -29,6 +29,14 @@ jobs:
           name: matlab-test-results
           path: |
             test/results.xml
+
+      - name: Upload MATLAB Coverage Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: matlab-coverage-results
+          path: |
+            test/coverage.xml
             
       - name: Test Report
         uses: dorny/test-reporter@v2
@@ -41,15 +49,7 @@ jobs:
     name: Run MATLAB Coverage
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Upload MATLAB Test & Coverage Results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: matlab-coverage-results
-          path: |
-            test/coverage.xml
-            
+    steps:            
       - name: Parse Cobertura report and add to GitHub Action summary
         if: always()
         run: |
