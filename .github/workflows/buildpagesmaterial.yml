@@ -29,7 +29,7 @@ jobs:
             publish_all_examples  # Ensure this is a valid command or script
             
       - name: Upload all files from a folder
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: published-docs-files
           path: docs/  # Upload everything under the docs directory
@@ -62,7 +62,7 @@ jobs:
       - run: pip install mkdocs-material
 
       - name: Download all files from a folder
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: published-docs-files
           path: docs/  # Download all files into the docs folder
