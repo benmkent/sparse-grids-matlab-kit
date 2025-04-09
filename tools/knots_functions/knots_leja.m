@@ -1,28 +1,29 @@
 function [x,w] = knots_leja(n,x_a,x_b,type,whichrho)
+
 % [X,W] = KNOTS_LEJA(N,A,B,<type>,'prob') returns N Leja points of type <type> between A and B, 
 %   for the approximation of
-%  
+%
 %   \int_a^b f(x) * 1/(b-a) dx
 %
-% [X,W] = KNOTS_LEJA(N,A,B,<type>,'nonprob') returns N Leja points of type <type> between A and B, 
+% [X,W] = KNOTS_LEJA(N,A,B,<type>,'nonprob') returns N Leja points of type <type> between A and B,
 %   for the approximation of
 %
 %   \int_a^b f(x) dx
 %
-% [X,W] = KNOTS_LEJA(N,A,B,<type>)  is the same as [X,W] = KNOTS_LEJA(N,A,B,<type>,'prob') 
+% [X,W] = KNOTS_LEJA(N,A,B,<type>)  is the same as [X,W] = KNOTS_LEJA(N,A,B,<type>,'prob')
 %
 % Follows the description of the choices of <type>.
 %
 % -----------------------------------------------------------
 %
 % [X,W] = KNOTS_LEJA(N,A,B,'line') given X(1)=B, X(2)=A, X(3)=(A+B)/2 recursively
-%   defines the n-th point by 
+%   defines the n-th point by
 %
 %   X_n= argmax_[A B] prod_{k=1}^{n-1} abs(X-X_k)
 %
 %
 % [X,W] = KNOTS_LEJA(N,A,B,'sym_line') given X(1)=(A+B)/2, X(2)=B, X(3)=A recursively
-%   defines the n-th and (n+1)-th point by 
+%   defines the n-th and (n+1)-th point by
 %
 %   X_n= argmax_[A B] prod_{k=1}^{n-1} abs(X-X_k)
 %   X_(n+1) = symmetric point of X_n with respect to (A+B)/2
@@ -49,30 +50,33 @@ if nargin==4
 end
 
 switch type
-            
+
     %--------------------------------------------------------
-    case 'line'       
+    case 'line'
         [x,w] = line_leja_tab(n);
-        
-        
-    %--------------------------------------------------------      
+
+
+        %--------------------------------------------------------
     case 'sym_line'
         [x,w] = sym_line_leja_tab(n);
-        
-                
-    %--------------------------------------------------------        
+
+
+        %--------------------------------------------------------
     case 'p_disk'
         [x,w] = p_disk_leja_tab(n);
-      
-    %--------------------------------------------------------        
+        %--------------------------------------------------------
+    case 'bk'
+        [x,w] = leja_bk(n);
+
+        %--------------------------------------------------------
     otherwise
         error('SparseGKit:WrongInput','unknown leja type')
 
 end
 
 
-% Leja points have been precomputed on the interval (-1,1) and assuming a probabilistic weight, i.e. 
-% the resulting quadrature rule is a discretization of \int_{-1}^1 f(x) 1/2 dx. 
+% Leja points have been precomputed on the interval (-1,1) and assuming a probabilistic weight, i.e.
+% the resulting quadrature rule is a discretization of \int_{-1}^1 f(x) 1/2 dx.
 % So now we need to rescale points and weights, if needed
 
 
@@ -83,7 +87,7 @@ if x_b~=1 || x_a~=-1
     x=scale_fact*x+tras;
 end
 
-% fix weights 
+% fix weights
 switch whichrho
     case 'prob'
         % as mentioned above, weights precomputed are already probabilistic, so in this case there's nothing to do
