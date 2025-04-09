@@ -26,7 +26,7 @@ jobs:
         with:
           command: |
             cd docs-examples/
-            publish_all_examples  # Ensure this is a valid command or script
+            run('publish_all_examples.m')   
             
       - name: Upload all files from a folder
         uses: actions/upload-artifact@v4
