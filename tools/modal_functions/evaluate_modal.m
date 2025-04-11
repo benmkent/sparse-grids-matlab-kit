@@ -27,7 +27,7 @@ end
 % the convention that points are stored as columns. Again, we throw an
 % error if the other convention is detected (this also prevents accidental input errors)
 [npoly,udim] = size(Mr.coeffs);
-ydim = size(Mr.poly_degrees,2);
+ydim = size(Mr.poly_degree,2);
 if size(non_grid_points,1)~=ydim
     error('SparseGKit:WrongInput',[ 'Incompatible sizes. Starting from release 14.4 non_grid_points needs to store points as columns, '...
         'i.e. its dimensions must be N x number_of_queried_evaluations (that is, following the same convention as points'...
@@ -43,7 +43,7 @@ nb_pts   = size(non_grid_points,2);
 
 %V = [p1(x1) p2(x1) p3(x1)... ; p1(x2) p2(x2) ...]
 V = zeros(nb_pts,npoly);
-I = Mr.poly_degrees;
+I = Mr.poly_degree;
 flags = Mr.poly_types;
 domain = Mr.domain;
 if length(flags)==1 || ischar(flags) % the second condition for when the function is called on one sigle family of polynomials
