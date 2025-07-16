@@ -1,0 +1,933 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://benmkent.github.io/sparse-grids-matlab-kit/test_spectral/">
+      
+      
+        <link rel="prev" href="../tutorial_PlateauSC_adaptive/">
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
+    
+    
+      
+        <title>Spectral Sparse Grid Tutorial - Sparse Grids MATLAB Toolkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#setup-a-sparse-grid-interpolant" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Sparse Grids MATLAB Toolkit" class="md-header__button md-logo" aria-label="Sparse Grids MATLAB Toolkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Sparse Grids MATLAB Toolkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Spectral Sparse Grid Tutorial
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/benmkent/sparse-grids-matlab-kit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    benmkent/sparse-grids-matlab-kit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Sparse Grids MATLAB Toolkit" class="md-nav__button md-logo" aria-label="Sparse Grids MATLAB Toolkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Sparse Grids MATLAB Toolkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/benmkent/sparse-grids-matlab-kit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    benmkent/sparse-grids-matlab-kit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Examples
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sparse_grids_tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Sparse Grids Tutorial
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_adaptive/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Adaptive Sparse Grids Tutorial
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_PlateauSC_adaptive/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PlateauSC  Tutorial
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Spectral Sparse Grid Tutorial
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Spectral Sparse Grid Tutorial
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#setup-a-sparse-grid-interpolant" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup a sparse grid interpolant
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convert-to-modal-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Convert to modal structure
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#two-spectral-approximations-can-be-summed-together" class="md-nav__link">
+    <span class="md-ellipsis">
+      Two spectral approximations can be summed together
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#truncation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Truncation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reconstruction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reconstruction
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#setup-a-sparse-grid-interpolant" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup a sparse grid interpolant
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convert-to-modal-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Convert to modal structure
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#two-spectral-approximations-can-be-summed-together" class="md-nav__link">
+    <span class="md-ellipsis">
+      Two spectral approximations can be summed together
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#truncation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Truncation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reconstruction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reconstruction
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Spectral Sparse Grid Tutorial</h1>
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      -->
+<title>test_spectral</title>
+<meta name="generator" content="MATLAB 24.1">
+<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
+<meta name="DC.date" content="2025-07-16">
+<meta name="DC.source" content="test_spectral.m">
+<style type="text/css">
+
+
+
+
+
+
+
+
+
+
+
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { width:auto; padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput {  padding:10px 11px; border:1px solid #d3d3d3; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput { pre-wrap;  word-wrap:break-word; width:auto; }, pre.codeoutput { pre-wrap;  word-wrap:break-word; width:auto; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D } 
+
+
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+  </style>
+</head>
+<body>
+<div class="content">
+<pre class="codeinput" style="white-space: pre-wrap; word-wrap: break-word;">clc
+addpath(genpath(<span class="string">'..'</span>))
+</pre></html>
+<h2 id="setup-a-sparse-grid-interpolant">Setup a sparse grid interpolant</h2>
+<html> <p>Construct a SG approximation for a test function.</p>
+<pre class="codeinput" style="white-space: pre-wrap; word-wrap: break-word;">n=4;
+k=6;
+domain = [0*ones(1,n);1*ones(1,n)];
+S = create_sparse_grid(n,n+k,@(n) knots_CC(n,0,1,<span class="string">'prob'</span>),@(l)lev2knots_doubling(l), @(ii) sum(ii));
+Sr = reduce_sparse_grid(S);
+
+f =  genz(n, 10.0, 0.5, <span class="string">"quadraticdecay"</span>, <span class="string">"gaussianpeak"</span>);
+
+f_on_Sr = evaluate_on_sparse_grid(f,Sr);
+
+figure(1);
+plot_sparse_grids_interpolant(S,Sr,domain,f_on_Sr);
+</pre>
+<pre style="white-space: pre-wrap; word-wrap: break-word;" class="codeoutput">using serial
+</pre>
+<img src="test_spectral_01.png" alt=""> </html>
+<h2 id="convert-to-modal-structure">Convert to modal structure</h2>
+<html> <pre class="codeinput" style="white-space: pre-wrap; word-wrap: break-word;">Mr=modal_sparse_grid(S,Sr,f_on_Sr,domain,<span class="string">'chebyshev'</span>);
+<span class="comment">% This gives a modal structure for the approximation.</span>
+display(Mr)
+
+<span class="comment">% This can be evaluated and is equal to the classic structure.</span>
+nmc = 1e4;
+samples = [rand(nmc,n).*diff(domain,1) + domain(1,:)].';
+sg_eval = interpolate_on_sparse_grid(S,Sr,f_on_Sr,samples);
+
+mr_eval = evaluate_modal(Mr, samples);
+
+e_sg = norm(f(samples) - sg_eval)/nmc;
+e_mr = norm(f(samples) - mr_eval)/nmc;
+fprintf(<span class="string">'==================================================================\n'</span>)
+fprintf(<span class="string">'Approximation error for function f\n'</span>)
+fprintf(<span class="string">'------------------------------------------------------------------\n'</span>)
+fprintf(<span class="string">'Mean Square Error in sparse grid approximations:   %E\n'</span>, e_sg )
+fprintf(<span class="string">'Mean Square Error in spectral approximations:      %E\n\n'</span>, e_mr )
+</pre>
+<pre style="white-space: pre-wrap; word-wrap: break-word;" class="codeoutput">
+Mr = 
+
+  struct with fields:
+
+          coeffs: [2929x1 double]
+    poly_degrees: [2929x4 double]
+      poly_types: 'chebyshev'
+          domain: [2x4 double]
+               n: 2929
+
+</pre>
+<pre style="white-space: pre-wrap; word-wrap: break-word;" class="codeoutput error">Unrecognized field name "poly_degree".
+
+Error in evaluate_modal (line 30)
+ydim = size(Mr.poly_degree,2);
+
+Error in test_spectral (line 29)
+mr_eval = evaluate_modal(Mr, samples);
+</pre></html>
+<h2 id="two-spectral-approximations-can-be-summed-together">Two spectral approximations can be summed together</h2>
+<html> <pre class="codeinput" style="white-space: pre-wrap; word-wrap: break-word;">k2 = 5; <span class="comment">% not equal to k</span>
+S2 = create_sparse_grid(n,n+k2,@(n) knots_CC(n,0,1,<span class="string">'prob'</span>),@(l)lev2knots_doubling(l), @(ii) sum(ii));
+Sr2 = reduce_sparse_grid(S2);
+
+g = genz(n, 1.0, 0.5, <span class="string">"quadraticdecay"</span>, <span class="string">"cornerpeak"</span>);
+g_on_Sr2 = evaluate_on_sparse_grid(g,Sr2);
+Mr2=modal_sparse_grid(S2,Sr2,g_on_Sr2,domain,<span class="string">'chebyshev'</span>);
+sg2_eval = interpolate_on_sparse_grid(S2,Sr2,g_on_Sr2,samples);
+mr2_eval = evaluate_modal(Mr2, samples);
+
+<span class="comment">% Check approximation error</span>
+norm(g(samples) - sg2_eval)/nmc;
+e_mr2 = norm(g(samples) - mr2_eval)/nmc;
+
+<span class="comment">% Add two approximations</span>
+Mr_sum = add_modal_sparse_grids(Mr,Mr2);
+mr_sum_eval = evaluate_modal(Mr_sum,samples);
+e_sum = norm(f(samples)+g(samples)- mr_sum_eval)/nmc;
+
+fprintf(<span class="string">'\n==================================================================\n'</span>)
+fprintf(<span class="string">'Approximation error for sum of approximations for f and g \n'</span>)
+fprintf(<span class="string">'------------------------------------------------------------------\n'</span>)
+fprintf(<span class="string">'                           MSE \t\tn dof\n'</span>)
+fprintf(<span class="string">'f spectral:                %1.2E\t%d\n'</span>, e_mr, Mr.n)
+fprintf(<span class="string">'g spectral:                %1.2E\t%d\n'</span>, e_mr2, Mr2.n)
+fprintf(<span class="string">'f+g spectral:              %1.2E\t%d\n'</span>, e_sum, Mr_sum.n)
+</pre></html>
+<h2 id="truncation">Truncation</h2>
+<html> <pre class="codeinput" style="white-space: pre-wrap; word-wrap: break-word;">tol = 1e-4;
+Mr_truncated = truncate_modal(Mr, tol);
+Mr2_truncated = truncate_modal(Mr2, tol);
+Mr_sum_truncated = truncate_modal(Mr_sum, tol);
+
+<span class="comment">% Check approximation error</span>
+mr_t_eval = evaluate_modal(Mr_truncated, samples);
+mr2_t_eval = evaluate_modal(Mr2_truncated, samples);
+mr_t_sum_eval = evaluate_modal(Mr_sum_truncated, samples);
+
+e_mr_t = norm(f(samples) - mr_t_eval)/nmc;
+e_mr2_t = norm(g(samples) - mr2_t_eval)/nmc;
+e_sum_t = norm(f(samples)+g(samples)- mr_t_sum_eval)/nmc;
+
+fprintf(<span class="string">'\n==================================================================\n'</span>)
+fprintf(<span class="string">'Approximation error for truncated approximations\n'</span>)
+fprintf(<span class="string">'------------------------------------------------------------------\n'</span>)
+fprintf(<span class="string">'Spectral term tolerance:           %E\n'</span>,tol)
+fprintf(<span class="string">'------------------------------------------------------------------\n'</span>)
+fprintf(<span class="string">'                           MSE \t\tn dof\n'</span>)
+fprintf(<span class="string">'f spectral:                %1.2E\t%d\n'</span>, e_mr, Mr.n)
+fprintf(<span class="string">'f spectral (truncated):    %1.2E\t%d\n'</span>, e_mr_t, Mr_truncated.n)
+fprintf(<span class="string">'g spectral:                %1.2E\t%d\n'</span>, e_mr2, Mr2.n)
+fprintf(<span class="string">'g spectral (truncated):    %1.2E\t%d\n'</span>, e_mr2_t, Mr2_truncated.n)
+fprintf(<span class="string">'f+g:                       %1.2E\t%d\n'</span>, e_sum, Mr_sum.n)
+fprintf(<span class="string">'f+g (truncated):           %1.2E\t%d\n'</span>, e_sum_t, Mr_sum_truncated.n)
+</pre></html>
+<h2 id="reconstruction">Reconstruction</h2>
+<html> <p>To turn this back into a sparse grid approximation we identify the necessary MI to include the polynomials.</p>
+<pre class="codeinput" style="white-space: pre-wrap; word-wrap: break-word;">MI_truncated = convert_polydegrees_to_miset(Mr_sum_truncated.poly_degrees, @(l)lev2knots_doubling(l));
+St = create_sparse_grid_multiidx_set(MI_truncated, @(n) knots_CC(n,0,1,<span class="string">'prob'</span>),@(l)lev2knots_doubling(l));
+St_r = reduce_sparse_grid(St);
+fg_on_St_r = evaluate_modal(Mr_sum_truncated,St_r.knots);
+
+St_eval = interpolate_on_sparse_grid(St,St_r,fg_on_St_r,samples);
+e_sg_t = norm(f(samples)+g(samples)-St_eval)/nmc;
+
+fprintf(<span class="string">'\n==================================================================\n'</span>)
+fprintf(<span class="string">'Approximation error for function f+g (reconstructed) \n'</span>)
+fprintf(<span class="string">'------------------------------------------------------------------\n'</span>)
+fprintf(<span class="string">'Spectral term tolerance:           %E\n'</span>,tol)
+fprintf(<span class="string">'------------------------------------------------------------------\n'</span>)
+fprintf(<span class="string">'                                   MSE\t\tn dof\n'</span>)
+fprintf(<span class="string">'f+g (reconstructed sparse grid):   %1.2E\t%d\n'</span>,e_sg_t,St_r.size)
+fprintf(<span class="string">'f+g (truncated spectral):          %1.2E\t%d\n'</span>,e_sum_t,Mr_sum_truncated.n)
+</pre>
+<p class="footer">
+<br>
+<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024a</a>
+<br>
+</p>
+</div>
+<!--
+##### SOURCE BEGIN #####
+%%
+clc
+addpath(genpath('..'))
+%% Setup a sparse grid interpolant
+% Construct a SG approximation for a test function.
+n=4;
+k=6;
+domain = [0*ones(1,n);1*ones(1,n)];
+S = create_sparse_grid(n,n+k,@(n) knots_CC(n,0,1,'prob'),@(l)lev2knots_doubling(l), @(ii) sum(ii));
+Sr = reduce_sparse_grid(S);
+
+f =  genz(n, 10.0, 0.5, "quadraticdecay", "gaussianpeak");
+
+f_on_Sr = evaluate_on_sparse_grid(f,Sr);
+
+figure(1);
+plot_sparse_grids_interpolant(S,Sr,domain,f_on_Sr);
+
+%% Convert to modal structure
+Mr=modal_sparse_grid(S,Sr,f_on_Sr,domain,'chebyshev');
+% This gives a modal structure for the approximation.
+display(Mr)
+
+% This can be evaluated and is equal to the classic structure.
+nmc = 1e4;
+samples = [rand(nmc,n).*diff(domain,1) + domain(1,:)].';
+sg_eval = interpolate_on_sparse_grid(S,Sr,f_on_Sr,samples);
+
+mr_eval = evaluate_modal(Mr, samples);
+
+e_sg = norm(f(samples) - sg_eval)/nmc;
+e_mr = norm(f(samples) - mr_eval)/nmc;
+fprintf('==================================================================\n')
+fprintf('Approximation error for function f\n')
+fprintf('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH\n')
+fprintf('Mean Square Error in sparse grid approximations:   %E\n', e_sg )
+fprintf('Mean Square Error in spectral approximations:      %E\n\n', e_mr )
+
+%% Two spectral approximations can be summed together
+k2 = 5; % not equal to k
+S2 = create_sparse_grid(n,n+k2,@(n) knots_CC(n,0,1,'prob'),@(l)lev2knots_doubling(l), @(ii) sum(ii));
+Sr2 = reduce_sparse_grid(S2);
+
+g = genz(n, 1.0, 0.5, "quadraticdecay", "cornerpeak");
+g_on_Sr2 = evaluate_on_sparse_grid(g,Sr2);
+Mr2=modal_sparse_grid(S2,Sr2,g_on_Sr2,domain,'chebyshev');
+sg2_eval = interpolate_on_sparse_grid(S2,Sr2,g_on_Sr2,samples);
+mr2_eval = evaluate_modal(Mr2, samples);
+
+% Check approximation error
+norm(g(samples) - sg2_eval)/nmc;
+e_mr2 = norm(g(samples) - mr2_eval)/nmc;
+
+% Add two approximations
+Mr_sum = add_modal_sparse_grids(Mr,Mr2);
+mr_sum_eval = evaluate_modal(Mr_sum,samples);
+e_sum = norm(f(samples)+g(samples)- mr_sum_eval)/nmc;
+
+fprintf('\n==================================================================\n')
+fprintf('Approximation error for sum of approximations for f and g \n')
+fprintf('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH\n')
+fprintf('                           MSE \t\tn dof\n')
+fprintf('f spectral:                %1.2E\t%d\n', e_mr, Mr.n)
+fprintf('g spectral:                %1.2E\t%d\n', e_mr2, Mr2.n)
+fprintf('f+g spectral:              %1.2E\t%d\n', e_sum, Mr_sum.n)
+
+%% Truncation
+tol = 1e-4;
+Mr_truncated = truncate_modal(Mr, tol);
+Mr2_truncated = truncate_modal(Mr2, tol);
+Mr_sum_truncated = truncate_modal(Mr_sum, tol);
+
+% Check approximation error
+mr_t_eval = evaluate_modal(Mr_truncated, samples);
+mr2_t_eval = evaluate_modal(Mr2_truncated, samples);
+mr_t_sum_eval = evaluate_modal(Mr_sum_truncated, samples);
+
+e_mr_t = norm(f(samples) - mr_t_eval)/nmc;
+e_mr2_t = norm(g(samples) - mr2_t_eval)/nmc;
+e_sum_t = norm(f(samples)+g(samples)- mr_t_sum_eval)/nmc;
+
+fprintf('\n==================================================================\n')
+fprintf('Approximation error for truncated approximations\n')
+fprintf('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH\n')
+fprintf('Spectral term tolerance:           %E\n',tol)
+fprintf('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH\n')
+fprintf('                           MSE \t\tn dof\n')
+fprintf('f spectral:                %1.2E\t%d\n', e_mr, Mr.n)
+fprintf('f spectral (truncated):    %1.2E\t%d\n', e_mr_t, Mr_truncated.n)
+fprintf('g spectral:                %1.2E\t%d\n', e_mr2, Mr2.n)
+fprintf('g spectral (truncated):    %1.2E\t%d\n', e_mr2_t, Mr2_truncated.n)
+fprintf('f+g:                       %1.2E\t%d\n', e_sum, Mr_sum.n)
+fprintf('f+g (truncated):           %1.2E\t%d\n', e_sum_t, Mr_sum_truncated.n)
+
+%% Reconstruction
+% To turn this back into a sparse grid approximation we identify the
+% necessary MI to include the polynomials.
+MI_truncated = convert_polydegrees_to_miset(Mr_sum_truncated.poly_degrees, @(l)lev2knots_doubling(l));
+St = create_sparse_grid_multiidx_set(MI_truncated, @(n) knots_CC(n,0,1,'prob'),@(l)lev2knots_doubling(l));
+St_r = reduce_sparse_grid(St);
+fg_on_St_r = evaluate_modal(Mr_sum_truncated,St_r.knots);
+
+St_eval = interpolate_on_sparse_grid(St,St_r,fg_on_St_r,samples);
+e_sg_t = norm(f(samples)+g(samples)-St_eval)/nmc;
+
+fprintf('\n==================================================================\n')
+fprintf('Approximation error for function f+g (reconstructed) \n')
+fprintf('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH\n')
+fprintf('Spectral term tolerance:           %E\n',tol)
+fprintf('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH\n')
+fprintf('                                   MSE\t\tn dof\n')
+fprintf('f+g (reconstructed sparse grid):   %1.2E\t%d\n',e_sg_t,St_r.size)
+fprintf('f+g (truncated spectral):          %1.2E\t%d\n',e_sum_t,Mr_sum_truncated.n)
+##### SOURCE END #####
+-->
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.sections", "navigation.expand"], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://benmkent.github.io/sparse-grids-matlab-kit/</loc>
+         <lastmod>2025-07-16</lastmod>
+    </url>
+    <url>
+         <loc>https://benmkent.github.io/sparse-grids-matlab-kit/sparse_grids_tutorial/</loc>
+         <lastmod>2025-07-16</lastmod>
+    </url>
+    <url>
+         <loc>https://benmkent.github.io/sparse-grids-matlab-kit/test_spectral/</loc>
+         <lastmod>2025-07-16</lastmod>
+    </url>
+    <url>
+         <loc>https://benmkent.github.io/sparse-grids-matlab-kit/tutorial_PlateauSC_adaptive/</loc>
+         <lastmod>2025-07-16</lastmod>
+    </url>
+    <url>
+         <loc>https://benmkent.github.io/sparse-grids-matlab-kit/tutorial_adaptive/</loc>
+         <lastmod>2025-07-16</lastmod>
+    </url>
+</urlset>
