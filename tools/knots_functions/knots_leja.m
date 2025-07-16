@@ -65,10 +65,6 @@ switch type
     case 'p_disk'
         [x,w] = p_disk_leja_tab(n);
         %--------------------------------------------------------
-    case 'bk'
-        [x,w] = leja_bk(n);
-
-        %--------------------------------------------------------
     otherwise
         error('SparseGKit:WrongInput','unknown leja type')
 
