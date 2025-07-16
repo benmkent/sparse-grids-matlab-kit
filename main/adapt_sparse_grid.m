@@ -530,8 +530,7 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
         % construct a monotonically decreasing envelope above the coefficient norms
         [polyseries_coeffs,polyseries_I, U] = convert_to_modal(S,Sr,f_on_Sr,controls.domain,controls.polytype);
         [inds,env] = coeff_envelope(sum(polyseries_I,2),controls.op_vect(polyseries_coeffs',0));
-        % Identify a profit tolerance on the spectral coefficents.
-        [prof_tol, ipt, beta0, beta1, plateau_found] = plateaudetection(inds, env, controls);
+        [~, ipt, beta0, beta1, plateau_found] = plateaudetection(inds, env, controls);
         if plateau_found
             saturated_ipt = ipt;
             final_env = env;
