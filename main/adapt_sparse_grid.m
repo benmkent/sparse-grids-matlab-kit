@@ -543,33 +543,9 @@ while nb_pts < controls.max_pts   %while nb_pts_wrong_count < controls.max_pts
         % Set profits_masked to zero for saturated models
         % Note saturated_models is empty if controls.detect_plateaus ~= 1
         profits_masked = profits;
-        I_matrix = eye(size(idx_bin,2));
 
-        for ii = 1:size(idx_bin,1)
-            saturated = false(size(idx_bin, 1), 1);
+        [saturated] = test_saturated_sgmk(idx_bin, plateau_found, saturated_ipt, lev2knots);
 
-            if plateau_found == false
-                % If there are no matches, mark as not saturated
-                saturated(ii) = false;
-            else
-                % Calculate the lowest total degree of the newly introduced polynomials
-                % Do this by considering backwards neighbours
-                for jj = 1:size(I_matrix,1)
-                    if any(idx_bin(ii, 1:end) - I_matrix(jj,:) == 0)
-                        total_degree(jj) = inf;
-                    else
-                        total_degree(jj) = sum(lev2knots(idx_bin(ii, 1:end) - I_matrix(jj,:))-1, 2) + 1;
-                    end
-                end
-
-                % Check if the total degree meets the saturation threshold
-                if min(total_degree) >= saturated_ipt
-                    saturated(ii) = true; % Mark as saturated
-                else
-                    saturated(ii) = false; % Mark as not saturated
-                end
-            end
-        end
         profits_masked(saturated) =0;
         profits = profits_masked;
     end

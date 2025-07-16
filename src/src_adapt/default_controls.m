@@ -86,4 +86,6 @@ end
 if ~isfield(controls,'burn_out')
     controls.burn_out=0;
 end
+if ~isfield(controls,'max_cost')
+    controls.max_cost = inf;
 end

@@ -233,7 +233,9 @@ switch N
             FIP = reshape(f_interp_eval,size(XP));
             
             %h(ii)=figure;
+            if length(CUTS)>2
             figure
+            end
             surf(XP,YP,FIP);
             if with_f_values
                 hold on

@@ -1,5 +1,4 @@
 function U = compute_modal_tensor(S,S_values,domain,flags)
-
 % COMPUTE_MODAL_TENSOR given a tensor grid and the values on it, re-express the interpolant 
 % as a modal expansion.
 % 
