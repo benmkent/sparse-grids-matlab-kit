@@ -16,7 +16,11 @@ function [sum_modal_sparse_grid] = add_modal_sparse_grids(modal_sparse_grid_1, m
 %                               modal form after addition or subtraction.
 %
 %   See also: convert_to_modal
-
+%----------------------------------------------------
+% Sparse Grid Matlab Kit
+% Copyright (c) 2009-2025 B. Kent, L. Tamellini, F. Nobile
+% See LICENSE.txt for license
+%----------------------------------------------------
 if nargin == 2
     subtract_flag = false;
 end

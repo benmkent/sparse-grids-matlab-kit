@@ -18,16 +18,9 @@ function Mr=modal_sparse_grid(S,Sr,nodal_values,domain,flags,~)
 %
 %----------------------------------------------------
 % Sparse Grid Matlab Kit
-% Copyright (c) 2009-2023 B. Kent, L. Tamellini, F. Nobile
+% Copyright (c) 2009-2025 B. Kent, L. Tamellini, F. Nobile
 % See LICENSE.txt for license
 %----------------------------------------------------
-
-% fix input
-errmsg=[' Please note that CONVERT_TO_MODAL does not accept INTERVAL_MAP '...
-    'input argument any longer, and FLAG input argument is now mandatory. '...
-    'Type help convert_to_modal for help. '...
-    'This error message will not be shown in future releases of SPARSE-GRID-MATLAB-KIT'];
-
 if nargin==4
     error('SparseGKit:WrongInput',strcat('not enough input arguments.',errmsg))
 end

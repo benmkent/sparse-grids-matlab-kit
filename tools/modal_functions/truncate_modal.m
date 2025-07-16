@@ -9,7 +9,7 @@ function Mr = truncate_modal(Mr, tol, mass)
 % See also evaluate_modal, modal_sparse_grid
 %----------------------------------------------------
 % Sparse Grid Matlab Kit
-% Copyright (c) 2009-2023 B. Kent, L. Tamellini, F. Nobile
+% Copyright (c) 2009-2025 B. Kent, L. Tamellini, F. Nobile
 % See LICENSE.txt for license
 %----------------------------------------------------
 

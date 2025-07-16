@@ -14,6 +14,11 @@ function [I_mi] = convert_polydegrees_to_miset(I_poly, lev2knots)
 %
 %   Outputs:
 %       I_mi      - Required multi-index set.
+%----------------------------------------------------
+% Sparse Grid Matlab Kit
+% Copyright (c) 2009-2025 B. Kent, L. Tamellini, F. Nobile
+% See LICENSE.txt for license
+%----------------------------------------------------
 I_mi = nan(size(I_poly));
 
 [n_poly,n_d] = size(I_poly);
