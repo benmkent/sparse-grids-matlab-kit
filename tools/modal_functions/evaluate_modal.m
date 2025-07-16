@@ -13,7 +13,7 @@ function f_values = evaluate_modal(Mr,non_grid_points)
 %
 %----------------------------------------------------
 % Sparse Grid Matlab Kit
-% Copyright (c) 2009-2023 B. Kent, L. Tamellini, F. Nobile
+% Copyright (c) 2009-2025 B. Kent, L. Tamellini, F. Nobile
 % See LICENSE.txt for license
 %----------------------------------------------------
 
