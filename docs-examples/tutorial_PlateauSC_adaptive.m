@@ -5,7 +5,6 @@
 % See LICENSE.txt for license
 %----------------------------------------------------
 
-
 %% a convergence study in L-inf norm (max in interpolation error)
 clear
 
